@@ -207,6 +207,14 @@ Please be aware that you can sometimes choose between "pushing a button" or "set
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS** - 2024H2 maintenance release
+
+- (pdbjjens) Change: node>=18, js-contoller>=5 and admin>=6 required
+- (pdbjjens) Change: Removed .npmignore
+- (pdbjjens) Change: Cyclic connection retry instead of disabling the adapter (#191)
+- (pdbjjens) New: Updated dependencies
+- (pdbjjens) Fix: Replace deprecated method "deleteChannel" by "delObject" (#224)
+
 ### 0.2.0 (2024-01-28)
 
 - (pdbjjens) Change: Increase minor version number

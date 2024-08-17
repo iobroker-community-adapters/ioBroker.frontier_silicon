@@ -6,14 +6,14 @@
 
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
-const utils = require("@iobroker/adapter-core");
-const axios = require("axios").default;
+const utils = require('@iobroker/adapter-core');
+const axios = require('axios').default;
 // @ts-ignore
-const xml2js = require("xml2js");
+const xml2js = require('xml2js');
 
 // Load your modules here, e.g.:
 // const fs = require("fs");
-const SESSION_RETRYS = 9; // Total number of session re-establish attempts before adapter is terminated = SESSION_RETRYS + 1
+const SESSION_RETRYS = 3; // Total number of session re-establish attempts before adapter is sent to sleep = SESSION_RETRYS + 1
 const IP_FORMAT = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 const PIN_FORMAT = /^(\d{4})$/;
 const sleeps = new Map();
@@ -1525,7 +1525,7 @@ class FrontierSilicon extends utils.Adapter {
 				}
 				else
 				{
-					await this.deleteChannelAsync("debug");
+					await this.delObjectAsync("debug",{ recursive: true });
 				}
 
 				await this.sleep(200);
@@ -1557,11 +1557,14 @@ class FrontierSilicon extends utils.Adapter {
 							--sessionRetryCnt;
 							await this.sleep(500);
 							await this.createSession();
-						} else { //terminate adapter after unsuccessful session retries
+						} else { // send adapter to sleep after unsuccessful session retries
 							sessionRetryCnt = SESSION_RETRYS;
-							//adapter.terminate does not clear up timers or intervals
+							// clear up timers or intervals
 							this.cleanUp();
-							this.terminate(`Device unreachable - Adapter terminated after ${++sessionRetryCnt} create Session attempts`, 11);
+							//this.terminate(`Device unreachable - Adapter terminated after ${++sessionRetryCnt} create Session attempts`, 11);
+							this.log.info(`Device unreachable, retry in one hour`);
+							await this.sleep(3600000);
+							await this.createSession();
 						}
 					} else {
 						// @ts-ignore
@@ -1610,7 +1613,7 @@ class FrontierSilicon extends utils.Adapter {
 				// await this.setStateAsync("info.connection", connected, true);
 				//if(this.log.level=="debug" || this.log.level=="silly")
 				//{
-				//	await this.deleteChannelAsync("debug");
+				//	await this.delObjectAsync("debug",{ recursive: true });
 				//}
 				//await this.sleep(200);
 			}
