@@ -1550,19 +1550,20 @@ class FrontierSilicon extends utils.Adapter {
 				} else if (err.request) { // catch device not reachable
 					// @ts-ignore
 					if (err.code === "ETIMEDOUT" || err.code === "ECONNRESET" || err.code === "EHOSTUNREACH") {
+						// @ts-ignore
+						this.log.debug(err);
 						if (sessionRetryCnt > 0) {
 						// @ts-ignore
-							this.log.error(err);
-							this.log.info(`Device unreachable, retry ${sessionRetryCnt} more times`);
+							this.log.warn (`Device ${devName.val} @ ${devIp} unreachable, retrying ${sessionRetryCnt} more times ...`);
 							--sessionRetryCnt;
 							await this.sleep(500);
 							await this.createSession();
 						} else { // send adapter to sleep after unsuccessful session retries
 							sessionRetryCnt = SESSION_RETRYS;
-							// clear up timers or intervals
+							// clean up timers or intervals
 							this.cleanUp();
 							//this.terminate(`Device unreachable - Adapter terminated after ${++sessionRetryCnt} create Session attempts`, 11);
-							this.log.info(`Device unreachable, retry in one hour`);
+							this.log.error (`Device ${devName.val} @ ${devIp} unreachable, retrying in one hour ...`);
 							await this.sleep(3600000);
 							await this.createSession();
 						}

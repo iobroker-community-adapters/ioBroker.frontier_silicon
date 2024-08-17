@@ -19,9 +19,9 @@ Provides support for media players, internet radios and SmartRadios equipped wit
 
 NOTE: This adapter has been transferred to iobroker-community-adapters for maintenance. Thus planned features (see below) will not be implemented. Only important bug fixes and dependency updates will be released in the future. However PRs with bug fixes or feature enhancements are always welcome.
 
-RELEASE NOTES: Version 0.1.x includes some Breaking Changes:
+RELEASE NOTES: Version 0.3.x includes some Breaking Changes:
 
-- node>=14, js-contoller>=4 and admin>=5 required
+- node>=18, js-contoller>=5 and admin>=6 required
 
 Upgrade your ioBroker to at least this software level, if you want to use this adapter
 
@@ -35,6 +35,9 @@ To prevent this from happening, the most simple solution is to stop the adapter 
 
 - Synchronization of power, volume and mute states with the UNDOK App
 Synchronization with the UNDOK App here means that power, volume and mute settings changed by the UNDOK App will now also be updated in the states of this adapter.  Due to the limitations of the FSAPI protocol the state synchronization of the UNDOK App with the adapter still is unreliable and will not be instantaneous but only happen when e.g. a preset or a mode is changed using the UNDOK App.
+
+- Cyclic connection retry instead of disabling the adapter
+Previously the adapter was terminated after 10 session connection attempts when the device was unreachable due to long-lasting network problems like router restarts, LAN or WiFi outage. Now the adapter will retry every hour until the device is reachable again. If you want to avoid log entries regarding the retries you now have to stop the adapter manually.
 
 ## Features
 
