@@ -37,7 +37,7 @@ To prevent this from happening, the most simple solution is to stop the adapter 
 Synchronization with the UNDOK App here means that power, volume and mute settings changed by the UNDOK App will now also be updated in the states of this adapter.  Due to the limitations of the FSAPI protocol the state synchronization of the UNDOK App with the adapter still is unreliable and will not be instantaneous but only happen when e.g. a preset or a mode is changed using the UNDOK App.
 
 - Cyclic connection retry instead of disabling the adapter
-Previously the adapter was terminated after 10 session connection attempts when the device was unreachable due to long-lasting network problems like router restarts, LAN or WiFi outage. Now the adapter will retry every hour until the device is reachable again. If you want to avoid log entries regarding the retries you now have to stop the adapter manually.
+Previously the adapter was terminated after 10 session connection attempts when the device was unreachable due to long-lasting network problems like router restarts, LAN or WiFi outage. Now the adapter will retry after every session refresh interval until the device is reachable again. If you want to avoid log entries regarding these retries you have to stop the adapter manually. If your network problem is fixed while the retry period is still ongoing, simply restart the adapter.
 
 ## Features
 
