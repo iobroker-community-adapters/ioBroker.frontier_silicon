@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "frontier_silicon",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "news": {
+      "0.3.0": {
+        "en": "Change: node>=18, js-contoller>=5 and admin>=6 required\nChange: Removed .npmignore\nChange: Cyclic connection retry instead of disabling the adapter (#191)\nNew: Updated dependencies\nFix: Replace deprecated method \"deleteChannel\" by \"delObject\" (#224)",
+        "de": "Änderung: node>=18, js-contoller>=5 und admin>=6 erforderlich\nÄnderung: .npmignore entfernt\nÄnderung: Zyklische Verbindungswiederholung statt Deaktivierung des Adapters (#191)\nNeu: Aktualisierte Abhängigkeiten\nFix: Ersetzen der deprecated Methode \"deleteChannel\" durch \"delObject\" (#224)",
+        "ru": "Изменение: node>=18, js-contoller>=5 и admin>=6 требуется\nИзменение: Удалено .npmignore\nИзменение: циклический ответ на подключение вместо отключения адаптера (#191)\nНовые: Обновленные зависимости\nИсправление: Заменить устаревший метод \"deleteChannel\" на \"delObject\" (#224)",
+        "pt": "Alteração: node>=18, js-contoller>=5 e admin>=6 requerido\nMudança: Removido .npmignore\nAlteração: Retira de conexão cíclica em vez de desativar o adaptador (#191)\nNovo: Dependências atualizadas\nFix: Substituir o método desprecated \"deleteChannel\" por \"delObject\" (#224)",
+        "nl": "Verandering: node>=18, js-contoller>=5 en admin>=6 vereist\nWijzigen: verwijderd .npmignore\nVerandering: Cyclische verbinding opnieuw proberen in plaats van uitschakelen van de adapter (#191)\nNieuw: Bijgewerkte afhankelijkheden\nFix: Vervang verouderde methode \"deleteChannel\" door \"delObject\" (#224)",
+        "fr": "Changement: noeud>=18, js-contoller>=5 et admin>=6 requis\nChangement : supprimé .npmignore\nChangement: Réessayer la connexion cyclique au lieu de désactiver l'adaptateur (#191)\nNouveau: Dépendances actualisées\nCorrection: Remplacer la méthode obsolète \"deleteChannel\" par \"delObject\" (#224)",
+        "it": "Modifica: nodo>=18, js-contoller>=5 e admin>=6 richiesto\nModifica: Removed .npmignore\nCambiamento: Rettifica di connessione ciclica invece di disabilitare l'adattatore (#191)\nNuovo: dipendenze aggiornate\nFisso: Sostituisci il metodo deprecato \"deleteChannel\" da \"delObject\" (#224)",
+        "es": "Cambio: node confianza=18, js-contoller=5 y administración=6 requerido\nCambio: Quitado .npmignore\nCambio: Retira la conexión cíclica en lugar de desactivar el adaptador (#191)\nNuevas: dependencias actualizadas\nFijación: Reemplazar el método deprecado \"deleteChannel\" por \"delObject\" (#224)",
+        "pl": "Zmiana: węzeł > = 18, js- contoller > = 5 i admin > = 6 wymagane\nZmiana: Usunięto .npmignore\nZmiana: powtórne połączenie cykliczne zamiast wyłączania adaptera (# 191)\nNowy: Aktualizacja zależności\nFix: Zastąpić metodę \"deleteChannel\" przez \"delObject\" (# 224)",
+        "uk": "Зміна: вершина>=18, js-contoller>=5 і admin>=6\nЗміна: Видалити .npmignore\nЗміна: Ретриця циклічного з'єднання замість відключення адаптера (#191)\nНовий: Оновлені залежності\nВиправлення: Заміна депресованого методу \"deleteChannel\" від \"delObject\" (#224)",
+        "zh-cn": "更改:节点18、js-contoller%5和管理员6\n更改: 删除 .npmignore\n更改: Cyclic 连接重试而不是取消适配器(# 191)\n新建:更新的依赖关系\n修补:将已折旧的方法“删除频道”改为“del Object”(# 224)"
+      },
       "0.2.0": {
         "en": "Change: Increase minor version number",
         "de": "Änderung: Nebenversionsnummer erhöhen",

@@ -1,4 +1,11 @@
 # Older changes
+## 0.0.11 (2023-03-30) 2023 maintenance release
+
+- (pdbjjens) New: Transfer of adapter to community
+- (pdbjjens) New: Updated dependencies
+- (pdbjjens) New: Use adapter-dev instead of gulp translate
+- (pdbjjens) Fix: Prevent js-controller >=3.2.x warnings regarding non-existent objects and typeErrors
+
 ## 0.0.10 (2020-11-29)
 
 - Translations

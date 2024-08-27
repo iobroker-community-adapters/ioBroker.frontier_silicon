@@ -209,7 +209,7 @@ Please be aware that you can sometimes choose between "pushing a button" or "set
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS** - 2024H2 maintenance release
+### 0.3.0 (2024-08-27) - 2024H2 maintenance release
 
 - (pdbjjens) Change: node>=18, js-contoller>=5 and admin>=6 required
 - (pdbjjens) Change: Removed .npmignore
@@ -243,13 +243,6 @@ Please be aware that you can sometimes choose between "pushing a button" or "set
 - (pdbjjens) New: Re-establish session if network connection is lost
 - (pdbjjens) New: Remove obsolete unit testing
 - (pdbjjens) Fix: Prevent crashes if radio device is not reachable
-
-### 0.0.11 (2023-03-30) 2023 maintenance release
-
-- (pdbjjens) New: Transfer of adapter to community
-- (pdbjjens) New: Updated dependencies
-- (pdbjjens) New: Use adapter-dev instead of gulp translate
-- (pdbjjens) Fix: Prevent js-controller >=3.2.x warnings regarding non-existent objects and typeErrors
 
 ## Legal Notices
 
