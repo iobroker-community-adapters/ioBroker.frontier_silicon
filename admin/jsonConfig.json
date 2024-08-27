@@ -37,7 +37,7 @@
                 "RecreateSessionInterval": {
                     "newLine": true,
                     "type": "number",
-                    "min": 60,
+                    "min": 10,
                     "max": 3600,
                     "sm": 12,
                     "md": 6,

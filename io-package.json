@@ -80,19 +80,6 @@
         "pl": "Przekład",
         "uk": "Переклади",
         "zh-cn": "笔译"
-      },
-      "0.0.9": {
-        "en": "Nicer readme and (hopefully) more robust session handling",
-        "de": "Schöneres readme und (hoffentlich) robusteres Session Handling",
-        "ru": "Nicer readme и (надежно) более прочная обработка сеансов",
-        "pt": "Limão mais agradável e (hopely) manipulação de sessão mais robusta",
-        "nl": "Mooier voorgelezen en meer robuuste sessie",
-        "fr": "Nicer readme et (hopefully) la manipulation de session plus robuste",
-        "it": "Più bello lettura e (sperato) più robusta manipolazione della sessione",
-        "es": "Lindo readme y (esperadamente) más robusto manejo de sesión",
-        "pl": "Nicer przeczytał i (pomyślnie) bardziej solidny sesyjny charakter",
-        "uk": "Хороший читме і (повно) більш надійний процес сеансу",
-        "zh-cn": "尼亚区读者和(希望)更强的会议"
       }
     },
     "titleLang": {
@@ -133,9 +120,11 @@
       "radio",
       "music player"
     ],
-    "license": "MIT",
+    "licenseInformation": {
+      "license": "MIT",
+      "type": "free"
+    },
     "platform": "Javascript/Node.js",
-    "main": "main.js",
     "icon": "radio.png",
     "enabled": true,
     "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.frontier_silicon/master/admin/radio.png",
@@ -146,18 +135,18 @@
     "compact": true,
     "connectionType": "local",
     "dataSource": "poll",
-    "materialize": true,
+    "tier": 2,
     "adminUI": {
       "config": "json"
     },
     "dependencies": [
       {
-        "js-controller": ">=4.0.15"
+        "js-controller": ">=5.0.19"
       }
     ],
     "globalDependencies": [
       {
-        "admin": ">=5.2.28"
+        "admin": ">=6.13.16"
       }
     ]
   },
