@@ -66,6 +66,7 @@ Previously the adapter was terminated after 10 session connection attempts when 
 
 - The Media player must be on for preset discovery
 - Due to limitations of the FSAPI protocol, parallel operation with the UNDOK App is not reliable and thus not supported. Use at own risk.
+- Due to limitations of the FSAPI protocol, Radio station icons are not available in DAB+ mode.
 
 ## Documentation
 
@@ -99,7 +100,7 @@ While the adapter reads the device's settings ioBroker objects and states are cr
 
   - friendlyName (`text, rw`)
   - power (`boolean, rw`)
-  - radioId (`test, ro`)
+  - radioId (`text, ro`)
 
     My guess is that this is the MAC of the device
 
@@ -119,18 +120,25 @@ While the adapter reads the device's settings ioBroker objects and states are cr
 
 - media
 
-  - state (`number, rw`)
+  - state (`text, ro`)
 
     valid values are:
-    - 0: Pause
-    - 1: Play
+    - 0: “IDLE”
+    - 1: “BUFFERING”
+    - 2: “PLAYING”
+    - 3: “PAUSED”
+    - 4: “REBUFFERING”
+    - 5: “ERROR”
+    - 6: “STOPPED”
+    - 7: “ERROR_POPUP”
+  
+  - control (`boolean, rw`)
 
-  - control
-
-    - next
-    - plause
-    - play
-    - previous
+    - 0: “STOP”
+    - 1: “PLAY”
+    - 2: “PAUSE”
+    - 3: “NEXT”
+    - 4: “PREVIOUS”
 
   Do not take the following names too seriously. The radio uses them differently in different modes.
 
@@ -209,6 +217,12 @@ Please be aware that you can sometimes choose between "pushing a button" or "set
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS** - 2025H1 maintenance release
+
+- (pdbjjens) Change: media state changed from number to string and readonly (#241)
+- (pdbjjens) New: Added media control function "stop" (#241)
+- (pdbjjens) New: Updated dependencies
+
 ### 0.3.0 (2024-08-27) - 2024H2 maintenance release
 
 - (pdbjjens) Change: node>=18, js-contoller>=5 and admin>=6 required
@@ -256,7 +270,7 @@ The authors are in no way endorsed by or affiliated with Frontier Smart Technolo
 
 MIT License
 
-Copyright (c) 2024 halloamt <iobroker@halloserv.de>
+Copyright (c) 2025 halloamt <iobroker@halloserv.de> & IoBroker-Community
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
