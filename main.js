@@ -459,7 +459,7 @@ class FrontierSilicon extends utils.Adapter {
 			common: {
 				name: "Radio ID",
 				type: "string",
-				role: "text",
+				role: "info.hardware",
 				read: true,
 				write: false,
 			},
@@ -477,7 +477,7 @@ class FrontierSilicon extends utils.Adapter {
 			common: {
 				name: "Max volume setting",
 				type: "number",
-				role: "value.max",
+				role: "level.volume.max",
 				read: true,
 				write: false,
 			},
@@ -573,7 +573,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Mode ID",
 					type: "string",
-					role: "text",
+					role: "media.input.id",
 					read: true,
 					write: false,
 				},
@@ -586,7 +586,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Mode label",
 					type: "string",
-					role: "text",
+					role: "media.input.label",
 					read: true,
 					write: false,
 				},
@@ -905,7 +905,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Selected mode label",
 					type: "string",
-					role: "media.input",
+					role: "media.input.label",
 					read: true,
 					write: false,
 				},
@@ -938,7 +938,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Media name",
 					type: "string",
-					role: "text",
+					role: "media.name",
 					read: true,
 					write: false,
 				},
@@ -1007,7 +1007,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Media text",
 					type: "string",
-					role: "text",
+					role: "media.text",
 					read: true,
 					write: false,
 				},
@@ -1274,7 +1274,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Web FSAPI URL",
 					type: "string",
-					role: "info.address",
+					role: "url.fsapi",
 					read: true,
 					write: false,
 				},
@@ -1286,7 +1286,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "SW version",
 					type: "string",
-					role: "text",
+					role: "info.firmware",
 					read: true,
 					write: false,
 				},
@@ -1572,6 +1572,7 @@ class FrontierSilicon extends utils.Adapter {
 							}
 						} else { // send adapter to sleep after unsuccessful session retries
 							sessionRetryCnt = SESSION_RETRYS;
+							// @ts-ignore
 							this.log.error (`Device ${devName.val} @ ${devIp} unreachable, retrying after session refresh interval ...`);
 							// clean up timers or intervals
 							polling = true; // disable onFSAPI processing
