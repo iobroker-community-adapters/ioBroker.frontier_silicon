@@ -793,7 +793,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Preset name",
 					type: "string",
-					role: "text",
+					role: "media.name",
 					read: true,
 					write: false,
 				},
