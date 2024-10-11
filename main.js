@@ -378,48 +378,20 @@ class FrontierSilicon extends utils.Adapter {
 					}
 					break;
 				case "media":
-					if(zustand[3] === "state")
+					if(zustand[3] === "control" && zustand[4] === "stop")
 					{
-						let z = -1;
-						if(state.val === 0)
-						{
-							z = 2;
-						}
-						else if(state.val === 1)
-						{
-							z = 1;
-						}
-						else
-						{
-							return;
-						}
 						await this.callAPI("netRemote.nav.state", "1");
-						await this.callAPI("netRemote.play.control", z.toString())
-							.then(async function (result) {
-								if(result.success) {
-									await adapter.setState("media.state", {val:state.val, ack: true});
-								}
-							});
+						await this.callAPI("netRemote.play.control", "0")
 					}
 					else if(zustand[3] === "control" && zustand[4] === "play")
 					{
 						await this.callAPI("netRemote.nav.state", "1");
 						await this.callAPI("netRemote.play.control", "1")
-							.then(async function (result) {
-								if(result.success) {
-									await adapter.setState("media.state", {val:1, ack: true});
-								}
-							});
 					}
 					else if(zustand[3] === "control" && zustand[4] === "pause")
 					{
 						await this.callAPI("netRemote.nav.state", "1");
 						await this.callAPI("netRemote.play.control", "2")
-							.then(async function (result) {
-								if(result.success) {
-									await adapter.setState("media.state", {val:0, ack: true});
-								}
-							});
 					}
 					else if(zustand[3] === "control" && zustand[4] === "next")
 					{
@@ -487,7 +459,7 @@ class FrontierSilicon extends utils.Adapter {
 			common: {
 				name: "Radio ID",
 				type: "string",
-				role: "text",
+				role: "info.hardware",
 				read: true,
 				write: false,
 			},
@@ -505,7 +477,7 @@ class FrontierSilicon extends utils.Adapter {
 			common: {
 				name: "Max volume setting",
 				type: "number",
-				role: "value.max",
+				role: "level.volume.max",
 				read: true,
 				write: false,
 			},
@@ -601,7 +573,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Mode ID",
 					type: "string",
-					role: "text",
+					role: "media.input.id",
 					read: true,
 					write: false,
 				},
@@ -614,7 +586,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Mode label",
 					type: "string",
-					role: "text",
+					role: "media.input.label",
 					read: true,
 					write: false,
 				},
@@ -821,7 +793,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Preset name",
 					type: "string",
-					role: "text",
+					role: "media.name",
 					read: true,
 					write: false,
 				},
@@ -933,7 +905,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Selected mode label",
 					type: "string",
-					role: "media.input",
+					role: "media.input.label",
 					read: true,
 					write: false,
 				},
@@ -966,7 +938,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Media name",
 					type: "string",
-					role: "text",
+					role: "media.name",
 					read: true,
 					write: false,
 				},
@@ -1035,7 +1007,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Media text",
 					type: "string",
-					role: "text",
+					role: "media.text",
 					read: true,
 					write: false,
 				},
@@ -1140,6 +1112,18 @@ class FrontierSilicon extends utils.Adapter {
 				native: {},
 			});
 
+			await this.setObjectNotExistsAsync("media.control.stop", {
+				type: "state",
+				common: {
+					name: "Stop",
+					type: "boolean",
+					role: "button.stop",
+					read: false,
+					write: true,
+				},
+				native: {},
+			});
+
 			await this.setObjectNotExistsAsync("media.control.play", {
 				type: "state",
 				common: {
@@ -1187,15 +1171,15 @@ class FrontierSilicon extends utils.Adapter {
 				},
 				native: {},
 			});
-			power = await this.callAPI("netRemote.play.control");
+			power = await this.callAPI("netRemote.play.status");
 			await this.setObjectNotExistsAsync("media.state", {
 				type: "state",
 				common: {
 					name: "Media state",
-					type: "number",
+					type: "string",
 					role: "media.state",
 					read: true,
-					write: true,
+					write: false,
 				},
 				native: {},
 			});
@@ -1203,14 +1187,39 @@ class FrontierSilicon extends utils.Adapter {
 			{
 				switch (power.result.value[0].u8[0])
 				{
-				// Play
+					// IDLE
+					case "0":
+						await this.setState("media.state", { val: "IDLE", ack: true });
+						break;
+					// BUFFERING
 					case "1":
-						await this.setState("media.state", { val: 1, ack: true });
+						await this.setState("media.state", { val: "BUFFERING", ack: true });
 						break;
-						// Pause
+					// PLAYING
 					case "2":
-						await this.setState("media.state", { val: 0, ack: true });
+						await this.setState("media.state", { val: "PLAYING", ack: true });
 						break;
+					// PAUSED
+					case "3":
+						await this.setState("media.state", { val: "PAUSED", ack: true });
+						break;
+					// REBUFFERING
+					case "4":
+						await this.setState("media.state", { val: "REBUFFERING", ack: true });
+						break;
+					// ERROR
+					case "5":
+						await this.setState("media.state", { val: "ERROR", ack: true });
+						break;
+					// STOPPED
+					case "6":
+						await this.setState("media.state", { val: "STOPPED", ack: true });
+						break;
+					// ERROR_POPUP
+					case "7":
+						await this.setState("media.state", { val: "ERROR_POPUP", ack: true });
+						break;
+
 					default:
 						break;
 				}
@@ -1265,7 +1274,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "Web FSAPI URL",
 					type: "string",
-					role: "info.address",
+					role: "url.fsapi",
 					read: true,
 					write: false,
 				},
@@ -1277,7 +1286,7 @@ class FrontierSilicon extends utils.Adapter {
 				common: {
 					name: "SW version",
 					type: "string",
-					role: "text",
+					role: "info.firmware",
 					read: true,
 					write: false,
 				},
@@ -1563,6 +1572,7 @@ class FrontierSilicon extends utils.Adapter {
 							}
 						} else { // send adapter to sleep after unsuccessful session retries
 							sessionRetryCnt = SESSION_RETRYS;
+							// @ts-ignore
 							this.log.error (`Device ${devName.val} @ ${devIp} unreachable, retrying after session refresh interval ...`);
 							// clean up timers or intervals
 							polling = true; // disable onFSAPI processing
@@ -1829,13 +1839,37 @@ class FrontierSilicon extends utils.Adapter {
 							case "netremote.play.status":
 								switch (item.value[0].u8[0])
 								{
-									// Play
-									case "2":
-										await this.setState("media.state", { val: 1, ack: true });
+									// IDLE
+									case "0":
+										await this.setState("media.state", { val: "IDLE", ack: true });
 										break;
-									// Pause
+									// BUFFERING
+									case "1":
+										await this.setState("media.state", { val: "BUFFERING", ack: true });
+										break;
+									// PLAYING
+									case "2":
+										await this.setState("media.state", { val: "PLAYING", ack: true });
+										break;
+									// PAUSED
 									case "3":
-										await this.setState("media.state", { val: 0, ack: true });
+										await this.setState("media.state", { val: "PAUSED", ack: true });
+										break;
+									// REBUFFERING
+									case "4":
+										await this.setState("media.state", { val: "REBUFFERING", ack: true });
+										break;
+									// ERROR
+									case "5":
+										await this.setState("media.state", { val: "ERROR", ack: true });
+										break;
+									// STOPPED
+									case "6":
+										await this.setState("media.state", { val: "STOPPED", ack: true });
+										break;
+									// ERROR_POPUP
+									case "7":
+										await this.setState("media.state", { val: "ERROR_POPUP", ack: true });
 										break;
 									default:
 										break;
