@@ -352,6 +352,7 @@ class FrontierSilicon extends utils.Adapter {
 												.then(async function (result) {
 													if(result.success) {
 														await adapter.setState("audio.volume", {val:Number(vol), ack: true});
+														await adapter.setState(`audio.control.volumeUp`, {val: true, ack: true});
 													}
 												});
 										}
@@ -371,6 +372,7 @@ class FrontierSilicon extends utils.Adapter {
 												.then(async function (result) {
 													if(result.success) {
 														await adapter.setState("audio.volume", {val:Number(vol), ack: true});
+														await adapter.setState(`audio.control.volumeDown`, {val: true, ack: true});
 													}
 												});
 										}
@@ -1120,6 +1122,7 @@ class FrontierSilicon extends utils.Adapter {
 					name: "Volume up",
 					type: "boolean",
 					role: "button.volume.up",
+					def: true,
 					read: false,
 					write: true,
 				},
@@ -1132,6 +1135,7 @@ class FrontierSilicon extends utils.Adapter {
 					name: "Volume down",
 					type: "boolean",
 					role: "button.volume.down",
+					def: true,
 					read: false,
 					write: true,
 				},
