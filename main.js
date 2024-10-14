@@ -246,7 +246,8 @@ class FrontierSilicon extends utils.Adapter {
 												await adapter.setState("modes.selectedLabel", {val:lab.val, ack: true});
 											}
 										});
-									//adapter.setState("modes.selectPreset", {val:null, ack: true});
+										await adapter.setState(`modes.${zustand[3]}.switchTo`, {val: true, ack: true});
+										//adapter.setState("modes.selectPreset", {val:null, ack: true});
 								}
 							});
 					}
@@ -254,10 +255,12 @@ class FrontierSilicon extends utils.Adapter {
 					if(zustand.length == 7 && zustand[4] === "presets" && zustand[6] === "recall")
 					{
 						await this.callAPI("netRemote.nav.state", "1");
+						// this.log.debug(`modes.${zustand[3]}.presets.${zustand[5]} activated`);
 						await adapter.callAPI("netRemote.nav.action.selectPreset", zustand[5])
 							.then(async function (result) {
 								if(result.success) {
-									await adapter.setState("modes.selectPreset", {val:Number(zustand[5]), ack: true});
+									await adapter.setState("modes.selectPreset", {val:Number(zustand[5]), ack: true});									
+									await adapter.setState(`modes.${zustand[3]}.presets.${zustand[5]}.recall`, {val: true, ack: true});
 								}
 							});
 						//adapter.getSelectedPreset();
@@ -303,6 +306,7 @@ class FrontierSilicon extends utils.Adapter {
 					else if(zustand[3] === "readPresets")
 					{
 						await this.getAllPresets(true);
+						await adapter.setState(`modes.readPresets`, {val: true, ack: true});
 					}
 					break;
 				case "audio":
@@ -348,6 +352,7 @@ class FrontierSilicon extends utils.Adapter {
 												.then(async function (result) {
 													if(result.success) {
 														await adapter.setState("audio.volume", {val:Number(vol), ack: true});
+														await adapter.setState(`audio.control.volumeUp`, {val: true, ack: true});
 													}
 												});
 										}
@@ -367,6 +372,7 @@ class FrontierSilicon extends utils.Adapter {
 												.then(async function (result) {
 													if(result.success) {
 														await adapter.setState("audio.volume", {val:Number(vol), ack: true});
+														await adapter.setState(`audio.control.volumeDown`, {val: true, ack: true});
 													}
 												});
 										}
@@ -382,26 +388,52 @@ class FrontierSilicon extends utils.Adapter {
 					{
 						await this.callAPI("netRemote.nav.state", "1");
 						await this.callAPI("netRemote.play.control", "0")
+						.then(async function (result) {
+							if(result.success) {
+								await adapter.setState(`media.control.stop`, {val: true, ack: true});
+							}
+						});
 					}
 					else if(zustand[3] === "control" && zustand[4] === "play")
 					{
 						await this.callAPI("netRemote.nav.state", "1");
 						await this.callAPI("netRemote.play.control", "1")
+						.then(async function (result) {
+							if(result.success) {
+								await adapter.setState(`media.control.play`, {val: true, ack: true});
+							}
+						});
+
 					}
 					else if(zustand[3] === "control" && zustand[4] === "pause")
 					{
 						await this.callAPI("netRemote.nav.state", "1");
 						await this.callAPI("netRemote.play.control", "2")
+						.then(async function (result) {
+							if(result.success) {
+								await adapter.setState(`media.control.pause`, {val: true, ack: true});
+							}
+						});
 					}
 					else if(zustand[3] === "control" && zustand[4] === "next")
 					{
 						await this.callAPI("netRemote.nav.state", "1");
-						await this.callAPI("netRemote.play.control", "3");
+						await this.callAPI("netRemote.play.control", "3")
+						.then(async function (result) {
+							if(result.success) {
+								await adapter.setState(`media.control.next`, {val: true, ack: true});
+							}
+						});
 					}
 					else if(zustand[3] === "control" && zustand[4] === "previous")
 					{
 						await this.callAPI("netRemote.nav.state", "1");
-						await this.callAPI("netRemote.play.control", "4");
+						await this.callAPI("netRemote.play.control", "4")
+						.then(async function (result) {
+							if(result.success) {
+								await adapter.setState(`media.control.previous`, {val: true, ack: true});
+							}
+						});
 					}
 					break;
 				case "debug":
@@ -409,6 +441,7 @@ class FrontierSilicon extends utils.Adapter {
 					{
 						try {
 							await this.createSession();
+							await adapter.setState(`debug.resetSession`, {val: true, ack: true});
 						} catch (err) {
 							// @ts-ignore
 							this.log.error(err);
@@ -628,6 +661,7 @@ class FrontierSilicon extends utils.Adapter {
 						name: "Switch to mode",
 						type: "boolean",
 						role: "button",
+						def: false,
 						read: false,
 						write: true,
 					},
@@ -641,6 +675,7 @@ class FrontierSilicon extends utils.Adapter {
 						name: "Read presets",
 						type: "boolean",
 						role: "button",
+						def: false,
 						read: false,
 						write: true,
 					},
@@ -818,6 +853,7 @@ class FrontierSilicon extends utils.Adapter {
 					name: "Recall preset",
 					type: "boolean",
 					role: "button",
+					def: false,
 					read: false,
 					write: true,
 				},
@@ -1086,6 +1122,7 @@ class FrontierSilicon extends utils.Adapter {
 					name: "Volume up",
 					type: "boolean",
 					role: "button.volume.up",
+					def: false,
 					read: false,
 					write: true,
 				},
@@ -1098,6 +1135,7 @@ class FrontierSilicon extends utils.Adapter {
 					name: "Volume down",
 					type: "boolean",
 					role: "button.volume.down",
+					def: false,
 					read: false,
 					write: true,
 				},
@@ -1118,6 +1156,7 @@ class FrontierSilicon extends utils.Adapter {
 					name: "Stop",
 					type: "boolean",
 					role: "button.stop",
+					def: false,
 					read: false,
 					write: true,
 				},
@@ -1130,6 +1169,7 @@ class FrontierSilicon extends utils.Adapter {
 					name: "Play",
 					type: "boolean",
 					role: "button.play",
+					def: false,
 					read: false,
 					write: true,
 				},
@@ -1142,6 +1182,7 @@ class FrontierSilicon extends utils.Adapter {
 					name: "Pause",
 					type: "boolean",
 					role: "button.pause",
+					def: false,
 					read: false,
 					write: true,
 				},
@@ -1154,6 +1195,7 @@ class FrontierSilicon extends utils.Adapter {
 					name: "Previous",
 					type: "boolean",
 					role: "button.prev",
+					def: false,
 					read: false,
 					write: true,
 				},
@@ -1166,6 +1208,7 @@ class FrontierSilicon extends utils.Adapter {
 					name: "Next",
 					type: "boolean",
 					role: "button.forward",
+					def: false,
 					read: false,
 					write: true,
 				},
@@ -1477,6 +1520,7 @@ class FrontierSilicon extends utils.Adapter {
 							name: "Reset session",
 							type: "boolean",
 							role: "button",
+							def: false,
 							read: false,
 							write: true,
 						},
