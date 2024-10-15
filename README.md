@@ -48,10 +48,10 @@ Previously the adapter was terminated after 10 session connection attempts when 
 - Notifications for several states
 - Volume control
 - Notifications
+- Auto discovery
 
 ### Planned features
 
-- Auto discovery
 - More states
 - Translations
 - More Exception handling
@@ -98,17 +98,17 @@ While the adapter reads the device's settings ioBroker objects and states are cr
 
 - device
 
-  - friendlyName (`text, rw`)
+  - friendlyName (`string, rw`)
   - power (`boolean, rw`)
-  - radioId (`text, ro`)
+  - radioId (`string, ro`)
 
     My guess is that this is the MAC of the device
 
-  - version (`text, ro`)
+  - version (`string, ro`)
 
     Software version
 
-  - webfsapi (`text, ro`)
+  - webfsapi (`string, ro`)
 
     The address of the API
 
@@ -120,7 +120,7 @@ While the adapter reads the device's settings ioBroker objects and states are cr
 
 - media
 
-  - state (`text, ro`)
+  - state (`string, ro`)
 
     valid values are:
     - 0: “IDLE”
@@ -132,7 +132,7 @@ While the adapter reads the device's settings ioBroker objects and states are cr
     - 6: “STOPPED”
     - 7: “ERROR_POPUP”
   
-  - control (`boolean, rw`)
+  - control (`boolean, wo`)
 
     - 0: “STOP”
     - 1: “PLAY”
@@ -142,33 +142,38 @@ While the adapter reads the device's settings ioBroker objects and states are cr
 
   Do not take the following names too seriously. The radio uses them differently in different modes.
 
-  - album (`text, ro`)
-  - artist (`text, ro`)
-  - graphic (`text, ro`)
+  - album (`string, ro`)
+  - artist (`string, ro`)
+  - graphic (`string, ro`)
 
     Use this URL to get an album cover or a station's logo.
 
-  - name (`text, ro`)
-  - text (`text, ro`)
-  - title (`text, ro`)
+  - name (`string, ro`)
+  - string (`string, ro`)
+  - title (`string, ro`)
 
 - modes
 
-  - readPresets
+  - readPresets (`boolean, wo`)
 
     Re-reads all presets
 
-  - selectPreset (`number, rw`)
+  - selectPreset (`number, wo`)
 
-    Used to get or select a preset. Be warned that the adapter guesses as this value cannot be read from the API.
+    Used to get or select a preset.  
+    Be warned that the adapter guesses as this value cannot be read from the API.
 
   - selected (`number, rw`)
 
     Indicates or selects the selected mode. Can also be selected via `modes.{number}.switchTo`
 
+  - selected (`string, ro`)
+
+    Indicates the label of the selected mode.
+
   - `{number}`
 
-    - id (`text, ro`)
+    - id (`string, ro`)
 
       The name of that mode
 
@@ -184,13 +189,13 @@ While the adapter reads the device's settings ioBroker objects and states are cr
 
       Only present on multi-room enabled devices. `true` if this mode can be used as source for several multi-room devices.
   
-    - switchTo
+    - switchTo (`boolean, wo`)
 
       Selects that mode.
 
     - presets
 
-      - availabe (`boolean, ro`)
+      - available (`boolean, ro`)
 
         Indicates whether presets for this mode are available
 
@@ -198,15 +203,15 @@ While the adapter reads the device's settings ioBroker objects and states are cr
 
         The index of that preset. Equals `mode.*.presets.{number}.key`.
 
-        - key
+        - key (`number, ro`)
 
           The index of that preset. Equals `mode.*.presets.{number}` from object tree and can be written into `modes.selectPreset`.
 
-        - name (`text, ro`)
+        - name (`string, ro`)
 
           The name of that preset
 
-        - switchTo
+        - recall (`boolean, wo`)
 
           Selects that preset and the corresponding mode.
 
@@ -222,6 +227,7 @@ Please be aware that you can sometimes choose between "pushing a button" or "set
 - (pdbjjens) Change: media state changed from number to string and readonly (#241)
 - (pdbjjens) New: Added media control function "stop" (#241)
 - (pdbjjens) Fix: Added button state acknowledgement
+- (pdbjjens) Fix: Prevent warning on adapter stop
 - (pdbjjens) New: Updated dependencies
 
 ### 0.3.0 (2024-08-27) - 2024H2 maintenance release
