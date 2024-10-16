@@ -1,6 +1,9 @@
 {
     "i18n": true,
     "type": "tabs",
+    "tabsStyle": {
+        "width": "calc(100% - 100px)"
+      },
     "items": {
         "_options": {
             "type": "panel",
@@ -8,9 +11,11 @@
             "items": {
                 "IP": {
                     "type": "text",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 6,
+                    "lg": 4,
+                    "xl": 4,
                     "label": "IP address",
                     "help": "IPV4 address of your media player e.g. 192.168.123.123"
                 },
@@ -19,18 +24,22 @@
                     "repeat": false,
                     "visible": true,
                     "maxLength": 4,
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 6,
+                    "lg": 4,
+                    "xl": 4,
                     "label": "PIN code",
                     "help": "PIN of your media player, default is 1234"
                 },
                 "SangeanNoSound": {
                     "newLine": true,
                     "type": "checkbox",
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 6,
+                    "lg": 4,
+                    "xl": 4,
                     "label": "No sound",
                     "help": "Check this box only if your media player starts DAB without sound"
                 },
@@ -39,9 +48,11 @@
                     "type": "number",
                     "min": 10,
                     "max": 3600,
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 6,
+                    "lg": 4,
+                    "xl": 4,
                     "label": "Session refresh interval",
                     "help": "Validity period of a session in minutes"
                 },
@@ -49,9 +60,11 @@
                     "type": "number",
                     "min": 1,
                     "max": 60,
+                    "xs": 12,
                     "sm": 12,
                     "md": 6,
-                    "lg": 6,
+                    "lg": 4,
+                    "xl": 4,
                     "label": "Polling interval",
                     "help": "Status polling interval in seconds"
                 }
