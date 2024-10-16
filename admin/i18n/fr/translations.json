@@ -9,5 +9,6 @@
     "Session refresh interval": "Intervalle d'actualisation de la session",
     "Validity period of a session in minutes": "Durée de validité d'une session en minutes",
     "Polling interval": "Intervalle d'interrogation",
-    "Status polling interval in seconds": "Intervalle d'interrogation de l'état en secondes"
+    "Status polling interval in seconds": "Intervalle d'interrogation de l'état en secondes",
+    "Network Settings": "Paramètres réseau"
 }

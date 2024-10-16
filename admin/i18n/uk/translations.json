@@ -9,5 +9,6 @@
     "Session refresh interval": "Інтервал оновлення сесії",
     "Validity period of a session in minutes": "Термін дії сеансу в хвилинах",
     "Polling interval": "Інтервал опитування",
-    "Status polling interval in seconds": "Інтервал опитування статусу в секундах"
+    "Status polling interval in seconds": "Інтервал опитування статусу в секундах",
+    "Network Settings": "Налаштування мережі"
 }

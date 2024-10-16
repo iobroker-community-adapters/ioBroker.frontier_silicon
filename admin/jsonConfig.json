@@ -3,11 +3,11 @@
     "type": "tabs",
     "tabsStyle": {
         "width": "calc(100% - 100px)"
-      },
+    },
     "items": {
-        "_options": {
+        "_network": {
             "type": "panel",
-            "label": "Options",
+            "label": "Network Settings",
             "items": {
                 "IP": {
                     "type": "text",
@@ -31,9 +31,14 @@
                     "xl": 4,
                     "label": "PIN code",
                     "help": "PIN of your media player, default is 1234"
-                },
+                }
+            }
+        },
+        "_options": {
+            "type": "panel",
+            "label": "Options",
+            "items": {
                 "SangeanNoSound": {
-                    "newLine": true,
                     "type": "checkbox",
                     "xs": 12,
                     "sm": 12,

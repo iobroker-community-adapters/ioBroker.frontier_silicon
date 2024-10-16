@@ -9,5 +9,6 @@
     "Session refresh interval": "Sessie vernieuwingsinterval",
     "Validity period of a session in minutes": "Geldigheidsduur van een sessie in minuten",
     "Polling interval": "Polling-interval",
-    "Status polling interval in seconds": "Status polling-interval in seconden"
+    "Status polling interval in seconds": "Status polling-interval in seconden",
+    "Network Settings": "Netwerkinstellingen"
 }
