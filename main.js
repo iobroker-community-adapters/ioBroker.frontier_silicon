@@ -132,8 +132,8 @@ class FrontierSilicon extends utils.Adapter {
 
 		// Here you must clear all timeouts or intervals that may still be active
 		polling = true; // disable onFSAPI processing
-		this.cleanUp(); //stop all timeouts
-		this.setState("info.connection", false, true)
+		this.cleanUp() //stop all timeouts
+		// this.setState("info.connection", false, true)
 
 		//		this.deleteSession()
 			.then(() => {
@@ -145,7 +145,7 @@ class FrontierSilicon extends utils.Adapter {
 			});
 	}
 
-	cleanUp() {
+	async cleanUp() {
 		clearTimeout(timeOutMessage);
 		sleeps.forEach((value) =>
 		{
