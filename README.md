@@ -222,7 +222,7 @@ Please be aware that you can sometimes choose between "pushing a button" or "set
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS** - 2025H1 maintenance release
+### 0.4.0 (2025-02-01) - 2025H1 maintenance release
 
 - (pdbjjens) Change: media state changed from number to string and readonly (#241)
 - (pdbjjens) New: Added media control function "stop" (#241)
@@ -257,14 +257,6 @@ Please be aware that you can sometimes choose between "pushing a button" or "set
 - (pdbjjens) Change: Validity check of all parameters in config UI
 - (pdbjjens) Change: Re-establish session if network connection is lost
 - (pdbjjens) New: Synchronization of power, volume and mute states with the UNDOK App
-
-### 0.1.0 (2023-07-15)
-
-- (pdbjjens) Breaking Changes: node>=14, js-contoller>=4 and admin>=5 required
-- (pdbjjens) New: json config UI
-- (pdbjjens) New: Re-establish session if network connection is lost
-- (pdbjjens) New: Remove obsolete unit testing
-- (pdbjjens) Fix: Prevent crashes if radio device is not reachable
 
 ## Legal Notices
 

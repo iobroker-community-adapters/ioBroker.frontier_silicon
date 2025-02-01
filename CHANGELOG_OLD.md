@@ -1,4 +1,12 @@
 # Older changes
+## 0.1.0 (2023-07-15)
+
+- (pdbjjens) Breaking Changes: node>=14, js-contoller>=4 and admin>=5 required
+- (pdbjjens) New: json config UI
+- (pdbjjens) New: Re-establish session if network connection is lost
+- (pdbjjens) New: Remove obsolete unit testing
+- (pdbjjens) Fix: Prevent crashes if radio device is not reachable
+
 ## 0.0.11 (2023-03-30) 2023 maintenance release
 
 - (pdbjjens) New: Transfer of adapter to community

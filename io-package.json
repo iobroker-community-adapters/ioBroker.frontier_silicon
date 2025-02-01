@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "frontier_silicon",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "news": {
+      "0.4.0": {
+        "en": "Change: media state changed from number to string and readonly (#241)\nNew: Added media control function \"stop\" (#241)\nNew: Optimizations for responsive design (#244)\nChange: Migration to ESLint 9 (#253)\nFix: Added button state acknowledgement\nFix: Prevent warning on adapter stop",
+        "de": "Änderung: Media State geändert von Number zu String und Readonly (#241)\nNeu: Mediensteuerungsfunktion \"stop\" hinzugefügt (#241)\nNeu: Optimierungen für Responsive Design (#244)\nÄnderung: Migration auf ESLint 9 (#253)\nFix: Zustandsbestätigung für Taster hinzugefügt\nFix: Warnung bei Adapterstop entfernt",
+        "ru": "Изменение: состояние СМИ изменилось с числа на строку и только для чтения (#241)\nНовая: Добавленная функция управления СМИ «остановка» (#241)\nНовый: Оптимизация для отзывчивого дизайна (#244)\nИзменение: Миграция в ESLint 9 (#253)\nИсправление: Добавлено подтверждение состояния кнопки\nFix: Предотвращение предупреждения о стопе адаптера",
+        "pt": "Mudança: estado de mídia alterado de número para string e somente leitura (#241)\nNovo: Adicionado função de controle de mídia \"parar\" (#241)\nNovo: Otimizações para design responsivo (#244)\nMudança: Migração para ESLint 9 (#253)\nCorrigir: aviso de estado do botão adicionado\nCorrigir: Prevenir aviso na parada do adaptador",
+        "nl": "Verandering: mediastatus veranderd van nummer naar tekenreeks en alleen-lezen (#241)\nNieuw: Toegevoegd media control functie \"stop\" (#241)\nNieuw: Optimalisaties voor responsief ontwerp (#244)\nVerandering: migratie naar ESLint 9 (#253)\nFix: Toegevoegd knop status erkenning\nFix: Voorkom waarschuwing op adapter stop",
+        "fr": "Changement : l'état des médias a changé de nombre en chaîne et en lecture seule (#241)\nNouveau: Ajout de la fonction de contrôle des médias \"stop\" (#241)\nNouveau : Optimisations pour un design réactif (#244)\nChangement: Migration vers ESLint 9 (#253)\nCorrection : Ajout de la mention de l'état du bouton\nCorrection: Prévenir l'avertissement sur l'arrêt de l'adaptateur",
+        "it": "Cambiamento: stato dei media cambiato dal numero alla stringa e in sola lettura (#241)\nNuovo: Aggiunta funzione di controllo dei media \"stop\" (#241)\nNovità: Ottimizzazione del design reattivo (#244)\nCambiamento: migrazione a ESLint 9 (#253)\nFisso: Aggiunto pulsante stato riconoscimento\nFisso: Prevenire l'avvertimento sulla fermata dell'adattatore",
+        "es": "Cambio: el estado de los medios cambió de número a cadena y sólo lectura (#241)\nNuevo: Función de control de medios agregada \"parar\" (#241)\nNuevo: Optimizaciones para el diseño sensible (#244)\nCambio: Migración a ESLint 9 (#253)\nFijación: Agregado estado del botón\nFijación: Prevenir la advertencia en la parada del adaptador",
+        "pl": "Zmiana: stan mediów zmienił się z liczby na ciąg i tylko do odczytu (# 241)\nNowy: Dodano funkcję sterowania nośnikiem \"stop\" (# 241)\nNowy: Optymalizacja responsywnego projektu (# 244)\nZmiana: migracja do ESLint 9 (# 253)\nFix: Dodano potwierdzenie stanu przycisku\nFix: Ostrzeżenie przed zatrzymaniem adaptera",
+        "uk": "Зміна: стан медіа змінено з числа на рядок та читання (#241)\nНова: Додано функцію медіа-контролю \"Зупинка\" (#241)\nНова: Оптимізація адаптивного дизайну (#244)\nЗміна: Міграція до ESLint 9 (#253)\nВиправлення: Додана кнопка державного визнання\nВиправлення: попередження попередження про зупинки адаптера",
+        "zh-cn": "更改: 媒体状态从数字改为字符串, 只读 (# 241)\n新建: 添加媒体控制功能\"停止\" (# 241)\n新的:适应性设计优化(# 244)\n变化:向ESLint 9迁移(# 253)\n修正: 添加按钮状态确认\n修正: 防止适配器停止时发出警告"
+      },
       "0.3.0": {
         "en": "Change: node>=18, js-contoller>=5 and admin>=6 required\nChange: Removed .npmignore\nChange: Cyclic connection retry instead of disabling the adapter (#191)\nNew: Updated dependencies\nFix: Replace deprecated method \"deleteChannel\" by \"delObject\" (#224)",
         "de": "Änderung: node>=18, js-contoller>=5 und admin>=6 erforderlich\nÄnderung: .npmignore entfernt\nÄnderung: Zyklische Verbindungswiederholung statt Deaktivierung des Adapters (#191)\nNeu: Aktualisierte Abhängigkeiten\nFix: Ersetzen der deprecated Methode \"deleteChannel\" durch \"delObject\" (#224)",
@@ -80,19 +93,6 @@
         "pl": "Nowy: Transfer adapter do społeczności\nNowy: upoważnienie\nNowy: Zastosowanie adapter-dev zamiast gulpów\nFix: Prevent js-controller =>3.2.x ostrzega o nieistniejących obiektach i typErrors",
         "uk": "Новий: Передача адаптера в громаду\nНові: Оновлені залежності\nНовий: Використовуйте адаптер-dev замість гіпульти перекладу\nВиправлення: Запобігання js-controller =>3.2.x попередження щодо неіснуючих об'єктів та типів",
         "zh-cn": "新:向社区转移适应人员\n新的:最新情况\n新的:使用适应器而不是固体字。\nFix:关于不存在物体和类型Errors的预防措施=3.2.x 警告"
-      },
-      "0.0.10": {
-        "en": "Translations",
-        "de": "Übersetzungen",
-        "ru": "Переводы",
-        "pt": "Traduções",
-        "nl": "Vertaling:",
-        "fr": "Traductions",
-        "it": "Traduzioni",
-        "es": "Traducciones",
-        "pl": "Przekład",
-        "uk": "Переклади",
-        "zh-cn": "笔译"
       }
     },
     "titleLang": {
