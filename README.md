@@ -227,9 +227,9 @@ Please be aware that you can sometimes choose between "pushing a button" or "set
 - (pdbjjens) Change: media state changed from number to string and readonly (#241)
 - (pdbjjens) New: Added media control function "stop" (#241)
 - (pdbjjens) New: Optimizations for responsive design (#244)
+- (pdbjjens) Change: Migration to ESLint 9 (#253)
 - (pdbjjens) Fix: Added button state acknowledgement
 - (pdbjjens) Fix: Prevent warning on adapter stop
-- (pdbjjens) New: Updated dependencies
 
 ### 0.3.0 (2024-08-27) - 2024H2 maintenance release
 
