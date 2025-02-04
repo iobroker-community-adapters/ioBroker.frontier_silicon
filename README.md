@@ -19,7 +19,16 @@ Provides support for media players, internet radios and SmartRadios equipped wit
 
 NOTE: This adapter has been transferred to iobroker-community-adapters for maintenance. Thus planned features (see below) will not be implemented. Only important bug fixes and dependency updates will be released in the future. However PRs with bug fixes or feature enhancements are always welcome.
 
-RELEASE NOTES: Version 0.3.x includes some Breaking Changes:
+RELEASE NOTES:
+
+Version 0.4.x includes a Breaking Change:
+
+- The type of "frontier_silicon.X.media.state" changed from "number" to "string" and readonly  
+If you update this adapter from a previous version instead of a new installation, you may possibly find warnings in the ioBroker log like:
+`State value to set for "frontier_silicon.0.media.state" has to be type "number" but received type "string"`
+To prevent this from happening, the most simple solution is to stop the adapter in the instances tab of ioBroker, completely delete the object tree in the objects tab and then restart the adapter. This of course is only neccessary once after the update and is not required if you do a clean new installation.
+
+Version 0.3.x includes some Breaking Changes:
 
 - node>=18, js-contoller>=5 and admin>=6 required  
 Upgrade your ioBroker to at least this software level, if you want to use this adapter
