@@ -83,8 +83,7 @@ class FrontierSilicon extends utils.Adapter {
             try {
                 await this.createSession();
             } catch (err) {
-                // @ts-expect-error because it works
-                this.log.error(err);
+                this.log.error(String(err));
                 return;
             }
         }
@@ -313,8 +312,8 @@ class FrontierSilicon extends utils.Adapter {
                 case 'audio':
                     if (zustand[3] === 'volume' && state.val !== null) {
                         await this.callAPI('netRemote.nav.state', '1');
-                        // @ts-expect-error because it works
-                        if (state.val >= 0 && state.val <= this.config.VolumeMax) {
+
+                        if (typeof state.val === 'number' && state.val >= 0 && state.val <= this.config.VolumeMax) {
                             await adapter
                                 .callAPI('netRemote.sys.audio.volume', state.val.toString())
                                 .then(async function (result) {
@@ -342,11 +341,9 @@ class FrontierSilicon extends utils.Adapter {
                                         result != undefined &&
                                         result.val != null &&
                                         result.val != undefined &&
-                                        // @ts-expect-error because it works
-                                        result.val < adapter.config.VolumeMax
+                                        Number(result.val) < adapter.config.VolumeMax
                                     ) {
-                                        // @ts-expect-error because it works
-                                        const vol = parseInt(result.val) + 1;
+                                        const vol = parseInt(result.val.toString()) + 1;
                                         await adapter
                                             .callAPI('netRemote.sys.audio.volume', vol.toString())
                                             .then(async function (result) {
@@ -372,11 +369,9 @@ class FrontierSilicon extends utils.Adapter {
                                         result != undefined &&
                                         result.val != null &&
                                         result.val != undefined &&
-                                        // @ts-expect-error because it works
-                                        result.val > 0
+                                        Number(result.val) > 0
                                     ) {
-                                        // @ts-expect-error because it works
-                                        const vol = parseInt(result.val) - 1;
+                                        const vol = parseInt(result.val.toString()) - 1;
                                         await adapter
                                             .callAPI('netRemote.sys.audio.volume', vol.toString())
                                             .then(async function (result) {
@@ -443,8 +438,7 @@ class FrontierSilicon extends utils.Adapter {
                             await this.createSession();
                             await adapter.setState(`debug.resetSession`, { val: true, ack: true });
                         } catch (err) {
-                            // @ts-expect-error because it works
-                            this.log.error(err);
+                            this.log.error(String(err));
                         }
                     }
                     break;
@@ -938,10 +932,8 @@ class FrontierSilicon extends utils.Adapter {
             });
             const modeLabel = await this.getStateAsync(`modes.${modeSelected}.label`);
             this.log.debug(`modeLabel: ${JSON.stringify(modeLabel)}`);
-            if (power.success && modeLabel !== null) {
-                // @ts-expect-error because it works
+            if (power.success && modeLabel && modeLabel !== null) {
                 this.log.debug(`ModeLabel: ${modeLabel.val}`);
-                // @ts-expect-error because it works
                 await this.setState('modes.selectedLabel', { val: modeLabel.val, ack: true });
             }
             await this.setObjectNotExistsAsync('modes.selectPreset', {
@@ -1246,14 +1238,17 @@ class FrontierSilicon extends utils.Adapter {
                 }
             }
         } catch (err) {
-            // @ts-expect-error because it works
-            this.log.error(`Error in discoverState(): ${err.message}${err.stack}`);
+            if (err instanceof Error) {
+                this.log.error(`Error in discoverState(): ${err.message}${err.stack}`);
+            } else {
+                this.log.error(`Error in discoverState(): ${String(err)}`);
+            }
         }
     }
 
     /**
 	Get basic device info and FSAPI URL
-	*/
+     */
     async getDeviceInfo() {
         const log = this.log;
         const dev = {};
@@ -1317,10 +1312,8 @@ class FrontierSilicon extends utils.Adapter {
             }
         } catch (err) {
             //this.log.debug("Error in getDeviceInfo: " + JSON.stringify(err));
-            // @ts-expect-error because it works
-            if (err.request) {
+            if (axios.isAxiosError(err) && err.request) {
                 // catch device not reachable
-                // @ts-expect-error because it works
                 if (err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET' || err.code === 'EHOSTUNREACH') {
                     if (sessionRetryCnt > 0) {
                         this.log.info(`Device unreachable, retry ${sessionRetryCnt} more times`);
@@ -1362,8 +1355,7 @@ class FrontierSilicon extends utils.Adapter {
             try {
                 await this.createSession(true);
             } catch (err) {
-                // @ts-expect-error because it works
-                this.log.error(err);
+                this.log.error(String(err));
             }
         }
 
@@ -1410,8 +1402,7 @@ class FrontierSilicon extends utils.Adapter {
                 try {
                     await this.createSession();
                 } catch (error) {
-                    // @ts-expect-error because it works
-                    this.log.error(error);
+                    this.log.error(String(error));
                 }
             }
         }
@@ -1427,8 +1418,11 @@ class FrontierSilicon extends utils.Adapter {
             const devName = await this.getStateAsync('device.friendlyName');
             const devIp = this.config.IP;
             if (!reCreateSession) {
-                // @ts-expect-error  because it works
-                log.info(`Trying to create session with ${devName.val} @ ${devIp} ...`);
+                if (devName && devName.val) {
+                    log.info(`Trying to create session with ${devName.val} @ ${devIp} ...`);
+                } else {
+                    log.info(`Trying to create session with device @ ${devIp} ...`);
+                }
             }
 
             try {
@@ -1441,11 +1435,13 @@ class FrontierSilicon extends utils.Adapter {
                         dev.Session = result.fsapiResponse.sessionId;
 
                         if (!reCreateSession) {
-                            // @ts-expect-error  because it works
-                            log.info(`Session ${dev.Session} with Device ${devName.val} @ ${devIp} created`);
+                            log.info(
+                                `Session ${dev.Session} with Device ${devName ? devName.val : 'unknown'} @ ${devIp} created`,
+                            );
                         } else {
-                            // @ts-expect-error because it works
-                            log.debug(`Session ${dev.Session} with Device ${devName.val} @ ${devIp} created`);
+                            log.debug(
+                                `Session ${dev.Session} with Device ${devName ? devName.val : 'unknown'} @ ${devIp} created`,
+                            );
                         }
                         connected = true;
                         sessionRetryCnt = SESSION_RETRYS;
@@ -1531,43 +1527,34 @@ class FrontierSilicon extends utils.Adapter {
                 // create session failed
                 await this.setState('info.connection', connected, true);
 
-                // @ts-expect-error because it works
-                if (err.response) {
+                if (axios.isAxiosError(err) && err.response) {
                     // catch wrong PIN
-                    // @ts-expect-error because it works
                     if (err.response.status == 403) {
                         throw new Error('PIN mismatch - enter the PIN set on your device. Default is 1234');
-                        // @ts-expect-error because it works
                     } else if (err.response.status == 404) {
                         throw new Error('Session ID mismatch or invalid command');
                     } else {
                         throw new Error(`Unknown createSession response error: ${JSON.stringify(err)}`);
                     }
-                    // @ts-expect-error because it works
-                } else if (err.request) {
+                } else if (axios.isAxiosError(err) && err.request) {
                     // catch device not reachable
-                    // @ts-expect-error because it works
                     if (err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET' || err.code === 'EHOSTUNREACH') {
-                        // @ts-expect-error because it works
-                        this.log.debug(err);
+                        this.log.debug(JSON.stringify(err));
                         if (sessionRetryCnt > 0) {
                             this.log.warn(
-                                // @ts-expect-error because it works
-                                `Device ${devName.val} @ ${devIp} unreachable, retrying ${sessionRetryCnt} more times ...`,
+                                `Device ${devName ? devName.val : 'unknown'} @ ${devIp} unreachable, retrying ${sessionRetryCnt} more times ...`,
                             );
                             --sessionRetryCnt;
                             try {
                                 await this.createSession();
                             } catch (err) {
-                                // @ts-expect-error because it works
-                                this.log.error(err);
+                                this.log.error(String(err));
                             }
                         } else {
                             // send adapter to sleep after unsuccessful session retries
                             sessionRetryCnt = SESSION_RETRYS;
                             this.log.error(
-                                // @ts-expect-error because it works
-                                `Device ${devName.val} @ ${devIp} unreachable, retrying after session refresh interval ...`,
+                                `Device ${devName ? devName.val : 'unknown'} @ ${devIp} unreachable, retrying after session refresh interval ...`,
                             );
                             // clean up timers or intervals
                             polling = true; // disable onFSAPI processing
@@ -1582,8 +1569,7 @@ class FrontierSilicon extends utils.Adapter {
                                 );
                                 polling = false;
                             } catch (err) {
-                                // @ts-expect-error because it works
-                                this.log.error(err);
+                                this.log.error(String(err));
                             }
                         }
                     } else {
@@ -1901,8 +1887,11 @@ class FrontierSilicon extends utils.Adapter {
                     });
                 }
             } catch (e) {
-                // @ts-expect-error because it works
-                adapter.log.error(e.message);
+                if (e instanceof Error) {
+                    adapter.log.error(e.message);
+                } else {
+                    adapter.log.error(String(e));
+                }
                 if (this.log.level == 'debug' || this.log.level == 'silly') {
                     await adapter.setState('debug.lastNotifyError', { val: JSON.stringify(e), ack: true });
                 }
