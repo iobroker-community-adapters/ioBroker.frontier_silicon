@@ -234,6 +234,7 @@ Please be aware that you can sometimes choose between "pushing a button" or "set
 ### **WORK IN PROGRESS**
 
 - (pdbjjens) Change: node>=20, js-controller>=7 and admin>=7 required
+- (oelison) read and write from daylight saving time
 
 ### 0.4.0 (2025-02-01) - 2025H1 maintenance release
 
