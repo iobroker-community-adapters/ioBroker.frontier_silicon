@@ -1904,43 +1904,57 @@ class FrontierSilicon extends utils.Adapter {
     }
 
     async UpdatePreset(name) {
-        if (name === undefined) {
+        if (!name) {
+            this.log.debug('UpdatePreset: Name is undefined or empty.');
             return;
         }
+
         const mode = await this.getStateAsync('modes.selected');
-        if (mode !== null && mode !== undefined && mode.val !== null && mode.val !== undefined) {
-            const hasPresets = await this.getStateAsync(`modes.${mode.val}.presets.available`);
-            if (
-                hasPresets !== null &&
-                hasPresets !== undefined &&
-                hasPresets.val !== null &&
-                hasPresets.val !== undefined &&
-                hasPresets.val
-            ) {
-                let i = 0;
-                // eslint-disable-next-line no-constant-condition
-                while (true) {
-                    const preset = await this.getStateAsync(`modes.${mode.val}.presets.${i}.name`);
-                    if (
-                        preset !== null &&
-                        preset !== undefined &&
-                        preset.val !== null &&
-                        preset.val !== undefined &&
-                        preset.val !== ''
-                    ) {
-                        if (name === preset.val) {
-                            await this.setState('modes.selectPreset', { val: i, ack: true });
-                            break;
-                        }
-                        ++i;
-                    } else {
-                        await this.setState('modes.selectPreset', { val: null, ack: true });
-                        break;
-                    }
-                }
-            } else {
-                await this.setState('modes.selectPreset', { val: null, ack: true });
+        if (!mode || mode.val === null || mode.val === undefined) {
+            this.log.debug('UpdatePreset: Selected mode is not available.');
+            return;
+        }
+
+        const hasPresets = await this.getStateAsync(`modes.${mode.val}.presets.available`);
+        if (!hasPresets || !hasPresets.val) {
+            this.log.debug(`UpdatePreset: No presets available for mode ${mode.val}.`);
+            await this.setState('modes.selectPreset', { val: null, ack: true });
+            return;
+        }
+
+        let presetFound = false;
+        let i = 0;
+
+        while (true) {
+            const preset = await this.getStateAsync(`modes.${mode.val}.presets.${i.toString()}.name`);
+            this.log.debug(`checking Preset: modes.${mode.val}.presets.${i}.name`);
+            // Wenn keine weiteren Presets vorhanden sind, Schleife beenden
+            if (!preset) {
+                this.log.debug(`UpdatePreset: No more presets found at index ${i}.`);
+                break;
             }
+
+            // Wenn der aktuelle Eintrag leer oder null ist, überspringen
+            if (!preset.val) {
+                this.log.debug(`UpdatePreset:  Mode ${mode.val} Preset at index ${i} is empty or null. Skipping.`);
+                i++;
+                continue;
+            }
+
+            // Wenn ein passender Preset-Name gefunden wurde
+            if (name === preset.val) {
+                this.log.debug(`UpdatePreset: Found matching preset "${name}" at index ${i}.`);
+                await this.setState('modes.selectPreset', { val: i, ack: true });
+                presetFound = true;
+                break;
+            }
+
+            i++;
+        }
+
+        if (!presetFound) {
+            this.log.debug(`UpdatePreset: No matching preset found for name "${name}".`);
+            await this.setState('modes.selectPreset', { val: null, ack: true });
         }
     }
 }
