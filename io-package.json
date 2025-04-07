@@ -152,6 +152,15 @@
     "adminUI": {
       "config": "json"
     },
+    "docs": {
+      "en": [
+        "docs/en/api.md",
+        "docs/en/states.md"
+      ],
+     "de": [
+        "docs/de/api.md"
+      ]
+    },
     "dependencies": [
       {
         "js-controller": ">=7.0.6"
