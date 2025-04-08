@@ -96,8 +96,10 @@ Documentation of the states and objects as well as general FSAPI documentation c
 ### **WORK IN PROGRESS**
 
 - (pdbjjens) Change: node>=20, js-controller>=7 and admin>=7 required
+- (oelison) read and write from daylight saving time
 - (pdbjjens) Fix: UpdatePreset now skips empty presets (#289)
 - (pdbjjens) Change: Adapter and FSAPI documentation was moved to the docs folder (#281)
+
 
 ### 0.4.0 (2025-02-01) - 2025H1 maintenance release
 

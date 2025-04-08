@@ -104,6 +104,7 @@ class FrontierSilicon extends utils.Adapter {
         // Otherwise this will cause a lot of unnecessary load on the system:
         this.subscribeStates('device.power');
         this.subscribeStates('device.friendlyName');
+        this.subscribeStates('device.dayLightSavingTime');
         this.subscribeStates('modes.*.switchTo');
         this.subscribeStates('modes.*.presets.*.recall');
         this.subscribeStates('modes.selected');
@@ -220,6 +221,19 @@ class FrontierSilicon extends utils.Adapter {
                                     }
                                 });
                             }
+                            break;
+                        case 'dayLightSavingTime':
+                            this.log.debug('Daylight Saving Time');
+                            await adapter
+                                .callAPI('netRemote.sys.clock.dst', state.val ? '1' : '0')
+                                .then(async function (result) {
+                                    if (result.success) {
+                                        await adapter.setState('device.dayLightSavingTime', {
+                                            val: state.val,
+                                            ack: true,
+                                        });
+                                    }
+                                });
                             break;
                         default:
                             break;
@@ -898,6 +912,27 @@ class FrontierSilicon extends utils.Adapter {
             if (power.success) {
                 this.log.debug(`Power: ${power.result.value[0].u8[0] == 1}`);
                 await this.setState('device.power', { val: power.result.value[0].u8[0] == 1, ack: true });
+            }
+
+            // dailight saving time
+            await this.setObjectNotExistsAsync('device.dayLightSavingTime', {
+                type: 'state',
+                common: {
+                    name: 'Daylight Saving Time',
+                    type: 'boolean',
+                    role: 'indicator',
+                    read: true,
+                    write: true,
+                },
+                native: {},
+            });
+            let dayLightSavingTime = await this.callAPI('netRemote.sys.clock.dst');
+            if (dayLightSavingTime.success) {
+                this.log.debug(`Daylight Saving Time: ${dayLightSavingTime.result.value[0].u8[0] == 1}`);
+                await this.setState('device.dayLightSavingTime', {
+                    val: dayLightSavingTime.result.value[0].u8[0] == 1,
+                    ack: true,
+                });
             }
 
             await this.setObjectNotExistsAsync('modes.selected', {
