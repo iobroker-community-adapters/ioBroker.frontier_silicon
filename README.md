@@ -99,7 +99,7 @@ Documentation of the states and objects as well as general FSAPI documentation c
 - (oelison) read and write from daylight saving time
 - (pdbjjens) Fix: UpdatePreset now skips empty presets (#289)
 - (pdbjjens) Change: Adapter and FSAPI documentation was moved to the docs folder (#281)
-
+- (pdbjjens) Change: Cleanup devDependencies
 
 ### 0.4.0 (2025-02-01) - 2025H1 maintenance release
 
