@@ -1,4 +1,13 @@
 # Older changes
+## 0.1.1 (2023-07-26)
+
+- (pdbjjens) Breaking Change: node>=14, js-contoller>=4 and admin>=5 required
+- (pdbjjens) Breaking Change: PIN encryption and validity check of all parameters in config UI
+- (pdbjjens) Breaking Change: Type of `frontier_silicon.X.modes.selectPreset` changed from "string" to  "number"
+- (pdbjjens) Change: Validity check of all parameters in config UI
+- (pdbjjens) Change: Re-establish session if network connection is lost
+- (pdbjjens) New: Synchronization of power, volume and mute states with the UNDOK App
+
 ## 0.1.0 (2023-07-15)
 
 - (pdbjjens) Breaking Changes: node>=14, js-contoller>=4 and admin>=5 required

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "frontier_silicon",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "news": {
+      "0.5.0": {
+        "en": "Change: node>=20, js-controller>=7.0.7 and admin>=7.6.17 required\nNew: Read and write from daylight saving time\nFix: UpdatePreset now handles empty presets correctly (#289)\nChange: Adapter and FSAPI documentation was moved to the docs folder (#281)\nChange: Cleanup devDependencies",
+        "de": "Änderung: node>=20, js-controller>=7.0.7 und admin>=7.6.17 erforderlich\nNeu: Lesen und Schreiben von Sommerzeit\nFix: UpdatePreset behandelt nun leere Voreinstellungen korrekt (#289)\nÄnderung: Adapter- und FSAPI-Dokumentation wurden in den Docs-Ordner verschoben (#281)\nÄnderung: Cleanup devDependencies",
+        "ru": "Изменение: node>=20, js-контроллер>=7.0.7 и admin>=7.6.17 требуется\nНовое: читать и писать о дневном свете, экономя время\nОбновление: Update Preset теперь обрабатывает пустые предустановки правильно (# 289)\nИзменение: Адаптер и документация FSAPI были перемещены в папку с документами (No 281)\nОбновление: Cleanup devDependencies",
+        "pt": "Alteração: nó>=20, js-controlador>=7.07 e admin>=7.6.17 necessários\nNovo: Leia e escreva a partir de horas de luz do dia\nCorrigir: Atualizar Predefinido agora lida corretamente com predefinições vazias (# 289)\nAlteração: A documentação do adaptador e do FSAPI foi movida para a pasta docs (# 281)\nAlteração: Limpeza devDependências",
+        "nl": "Verandering: node>=20, js-controller>=7.7 en admin>=7.617 vereist\nNieuw: Lees en schrijf vanuit de lokale tijd\nFix: bijwerken Voorinstelling gaat nu correct om met lege instellingen (#289)\nWijziging: Adapter en FSAPI documentatie werd verplaatst naar de docs map (#281)\nVerandering: Opruimen van devDependencies",
+        "fr": "Changement : noeud>=20, js-controller>=7.0.7 et admin>=7.6.17 requis\nNouveau : lire et écrire à partir de l'heure avancée\nCorrection : mise à jour Preset gère maintenant correctement les presets vides (#289)\nChangement : La documentation de l'adaptateur et de la FSAPI a été déplacée dans le dossier docs (#281)\nChangement: Dépendances de nettoyage",
+        "it": "Modifica: nodo>=20, js-controller>=7.0.7 e admin>=7.6.17 richiesto\nNovità: leggere e scrivere dall'ora legale\nCorrezione: Aggiornamento Preimposta ora gestisce correttamente i preset vuoti (#289)\nModifica: L'adattatore e la documentazione FSAPI sono stati spostati nella cartella dei documenti (#281)\nCambiamento: Cleanup devDependencies",
+        "es": "Cambio: node confianza=20, js-controller confianza=7.0.7 y administración=7.6.17 requerido\nNuevo: Lea y escriba desde el horario de verano\nCorrección: Actualización Preset ahora maneja presets vacíos correctamente (#289)\nCambio: Adaptador y documentación FSAPI se trasladaron a la carpeta docs (#281)\nCambio: DevDependencies de limpieza",
+        "pl": "Zmiana: węzeł > = 20, kontroler js- > = 7.0.7 i admin > = 7.6.17 wymagane\nNowy: Odczyt i zapis z dziennego czasu oszczędzania\nPopraw: aktualizacja Preset teraz obsługuje puste ustawienia poprawnie (# 289)\nZmiana: Dokumentacja adaptera i FSAPI została przeniesiona do folderu Docs (# 281)\nZmiana: Oczyszczenie devDevendences",
+        "uk": "Зміна: вершина>=20, js-controller>=7.0.7 і admin>=7.6.17 потрібно\nНовинка: Читати і писати з денного світла економити час\nВиправлення: Оновлення Придбання тепер ручки порожніх пресетів правильно (#289)\nЗміна: Перехідник і документація FSAPI було перенесено на папку docs (#281)\nЗміна: Прибиральники",
+        "zh-cn": "变化:节点20、js控制器7.0.7和管理员7.6.17\n新建: 从白天节省时间读写\n修正:更新 现在预设正确处理空预设(# 289)\n更改: 适配器和 FSAPI 文档已移至文件文件夹 (# 281)\n变化: 清理依赖性"
+      },
       "0.4.0": {
         "en": "Change: media state changed from number to string and readonly (#241)\nNew: Added media control function \"stop\" (#241)\nNew: Optimizations for responsive design (#244)\nChange: Migration to ESLint 9 (#253)\nFix: Added button state acknowledgement\nFix: Prevent warning on adapter stop",
         "de": "Änderung: Media State geändert von Number zu String und Readonly (#241)\nNeu: Mediensteuerungsfunktion \"stop\" hinzugefügt (#241)\nNeu: Optimierungen für Responsive Design (#244)\nÄnderung: Migration auf ESLint 9 (#253)\nFix: Zustandsbestätigung für Taster hinzugefügt\nFix: Warnung bei Adapterstop entfernt",
@@ -80,19 +93,6 @@
         "pl": "Zmiany: węzeł >=14, js-contoller>=4 i admin>=5 wymaganych\nNowy: json config UI\nUstanowiona sesja, jeśli połączenia sieciowe się nie utracą\nNowy: Przeprowadzenie przestarzałych testów jednostkowych\nFix: Prevent rozbija się, jeśli urządzenie radiowe nie jest możliwe",
         "uk": "Зміни змін: вузол>=14, js-contoller>=4 та admin>=5\nНовий: json config UI\nНовий: Відновити сеанс, якщо мережеве підключення втрачено\nНовий: Видаліть застарілий блок тестування\nВиправлення: Запобігання аварійних ситуацій, якщо радіопристрій не досягається",
         "zh-cn": "排减变化:不de>=14, js-contoller>=4和 admin>=5\nNew: jsonconfig UI\n新的:如果网络联系丧失,重建会议\n新:消除过时的单位试验\nFix:如果无线电装置无法到达,那么预防事故"
-      },
-      "0.0.11": {
-        "en": "New: Transfer of adapter to community\nNew: Updated dependencies\nNew: Use adapter-dev instead of gulp translate\nFix: Prevent js-controller >=3.2.x warnings regarding non-existent objects and typeErrors",
-        "de": "Neu: Transfer von Adapter zur Community\nNeu: Aktualisierte Abhängigkeiten\nNeu: Verwenden Sie Adapter-dev anstelle von gulp translate\nFix: Verhindern js-controller =>3.2.x Warnungen bezüglich nicht vorhandener Objekte und TypErrors",
-        "ru": "Новый: Передача адаптера в сообщество\nНовый: Обновленные зависимости\nНовый: Используйте адаптер-dev вместо gulp перевести\nИсправление: Предотвращение js-controller =>3.2.x предупреждения относительно несущих объектов и типаErrors",
-        "pt": "Novo: Transferência de adaptador para a comunidade\nNovo: Dependências atualizadas\nNovo: Use o adaptador-dev em vez de gulp traduzir\nFix: Prevenir js-controller =>3.2.x advertências sobre objetos não existentes e typeErrors",
-        "nl": "Vertaling:\nOpgewaardeerde afhankelijkheid\nGebruik adapter-dev in plaats van gulp vertaal\nVertaling:",
-        "fr": "Nouveau: Transfert de l'adaptateur à la communauté\nNouveau: dépendances actualisées\nNouveau: Utilisez adaptateur-dev au lieu de traduire gulp\nCorrection : Prévenir les avertissements de js-controller =>3.2.x concernant les objets et types inexistants",
-        "it": "Nuovo: Trasferimento dell'adattatore alla comunità\nNuovo: dipendenze aggiornate\nNuovo: Utilizzare adattatore-dev invece di gulp tradurre\nFisso: Prevenire js-controller =>3.2.x avvisi relativi a oggetti e tipi non esistenti",
-        "es": "Nuevo: Transferencia de adaptador a la comunidad\nNuevas: dependencias actualizadas\nNuevo: Usar adaptador-dev en lugar de traducir gulp\nFijación: Prevenga js-controller = ratio3.2.x advertencias sobre objetos inexistentes y tipoErrors",
-        "pl": "Nowy: Transfer adapter do społeczności\nNowy: upoważnienie\nNowy: Zastosowanie adapter-dev zamiast gulpów\nFix: Prevent js-controller =>3.2.x ostrzega o nieistniejących obiektach i typErrors",
-        "uk": "Новий: Передача адаптера в громаду\nНові: Оновлені залежності\nНовий: Використовуйте адаптер-dev замість гіпульти перекладу\nВиправлення: Запобігання js-controller =>3.2.x попередження щодо неіснуючих об'єктів та типів",
-        "zh-cn": "新:向社区转移适应人员\n新的:最新情况\n新的:使用适应器而不是固体字。\nFix:关于不存在物体和类型Errors的预防措施=3.2.x 警告"
       }
     },
     "titleLang": {
@@ -157,7 +157,7 @@
         "docs/en/api.md",
         "docs/en/states.md"
       ],
-     "de": [
+      "de": [
         "docs/de/api.md"
       ]
     },

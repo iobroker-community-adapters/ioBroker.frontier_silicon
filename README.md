@@ -98,7 +98,7 @@ Documentation of the states and objects as well as general FSAPI documentation c
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS** - 2025H2 maintenance release
+### 0.5.0 (2025-08-28) - 2025H2 maintenance release
 
 - (pdbjjens) Change: node>=20, js-controller>=7.0.7 and admin>=7.6.17 required
 - (oelison)  New: Read and write from daylight saving time
@@ -132,15 +132,6 @@ Documentation of the states and objects as well as general FSAPI documentation c
 - (pdbjjens) Change: node>=16, js-contoller>=4 and admin>=5 required
 - (pdbjjens) New: Optionally display PIN code and limit to 4 digits in config GUI
 - (pdbjjens) Updated dependencies
-
-### 0.1.1 (2023-07-26)
-
-- (pdbjjens) Breaking Change: node>=14, js-contoller>=4 and admin>=5 required
-- (pdbjjens) Breaking Change: PIN encryption and validity check of all parameters in config UI
-- (pdbjjens) Breaking Change: Type of `frontier_silicon.X.modes.selectPreset` changed from "string" to  "number"
-- (pdbjjens) Change: Validity check of all parameters in config UI
-- (pdbjjens) Change: Re-establish session if network connection is lost
-- (pdbjjens) New: Synchronization of power, volume and mute states with the UNDOK App
 
 ## Legal Notices
 
