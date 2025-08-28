@@ -21,6 +21,11 @@ NOTE: This adapter has been transferred to iobroker-community-adapters for maint
 
 RELEASE NOTES:
 
+Version 0.5.x includes a Breaking Change:
+
+- node>=20, js-controller>=7.0.7 and admin>=7.6.17 required  
+Upgrade your ioBroker to at least this software level, if you want to use this adapter
+
 Version 0.4.x includes a Breaking Change:
 
 - The type of "frontier_silicon.X.media.state" changed from "number" to "string" and readonly  
@@ -93,11 +98,11 @@ Documentation of the states and objects as well as general FSAPI documentation c
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### **WORK IN PROGRESS** - 2025H2 maintenance release
 
-- (pdbjjens) Change: node>=20, js-controller>=7 and admin>=7 required
-- (oelison) read and write from daylight saving time
-- (pdbjjens) Fix: UpdatePreset now skips empty presets (#289)
+- (pdbjjens) Change: node>=20, js-controller>=7.0.7 and admin>=7.6.17 required
+- (oelison)  New: Read and write from daylight saving time
+- (pdbjjens) Fix: UpdatePreset now handles empty presets correctly (#289)
 - (pdbjjens) Change: Adapter and FSAPI documentation was moved to the docs folder (#281)
 - (pdbjjens) Change: Cleanup devDependencies
 
