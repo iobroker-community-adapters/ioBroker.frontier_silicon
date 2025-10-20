@@ -1,4 +1,10 @@
 # Older changes
+## 0.1.2 (2024-01-26) - 2024 maintenance release
+
+- (pdbjjens) Change: node>=16, js-contoller>=4 and admin>=5 required
+- (pdbjjens) New: Optionally display PIN code and limit to 4 digits in config GUI
+- (pdbjjens) Updated dependencies
+
 ## 0.1.1 (2023-07-26)
 
 - (pdbjjens) Breaking Change: node>=14, js-contoller>=4 and admin>=5 required

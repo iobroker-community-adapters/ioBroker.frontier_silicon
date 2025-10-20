@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "frontier_silicon",
-    "version": "0.5.0",
+    "version": "0.5.1-alpha.0",
     "news": {
+      "0.5.1-alpha.0": {
+        "en": "Fix: Add GitHub as npm Trusted Publisher\nChange: Update dependencies",
+        "de": "Fix: GitHub als npm Trusted Publisher hinzufügen\nÄnderung: Abhängigkeiten aktualisieren",
+        "ru": "Добавить GitHub в качестве npm Trusted Publisher\nИзменение: Обновление зависимостей",
+        "pt": "Corrigir: Adicionar GitHub como editor confiável npm\nAlteração: Atualizar dependências",
+        "nl": "Fix: GitHub toevoegen als npm Trusted Publisher\nWijzigingen: afhankelijkheden bijwerken",
+        "fr": "Correction : Ajouter GitHub comme éditeur fiable npm\nChangement : Mise à jour des dépendances",
+        "it": "Fix: Aggiungi GitHub come npm Trusted Publisher\nModifica: Aggiornare le dipendenze",
+        "es": "Fijación: Añadir GitHub como npm Fideicomiso Editor\nCambio: Actualizar las dependencias",
+        "pl": "Fix: Dodaj GitHub jako npm zaufanego wydawcy\nZmiana: Uaktualnij zależności",
+        "uk": "Виправлення: Додати GitHub як npm Trusted Publisher\nЗміна: Зміна залежності оновлення",
+        "zh-cn": "修正: 将 GitHub 添加为 npm 信任的发布器\n更改:更新依赖关系"
+      },
       "0.5.0": {
         "en": "Change: node>=20, js-controller>=7.0.7 and admin>=7.6.17 required\nNew: Read and write from daylight saving time\nFix: UpdatePreset now handles empty presets correctly (#289)\nChange: Adapter and FSAPI documentation was moved to the docs folder (#281)\nChange: Cleanup devDependencies",
         "de": "Änderung: node>=20, js-controller>=7.0.7 und admin>=7.6.17 erforderlich\nNeu: Lesen und Schreiben von Sommerzeit\nFix: UpdatePreset behandelt nun leere Voreinstellungen korrekt (#289)\nÄnderung: Adapter- und FSAPI-Dokumentation wurden in den Docs-Ordner verschoben (#281)\nÄnderung: Cleanup devDependencies",
@@ -80,19 +93,6 @@
         "pl": "Zmiana: węzeł >=14, js-contoller>=4 i admin>=5 wymaganych\nZmiana: PIN szyfrowanie i ważność sprawdzania wszystkich parametrów w konfiguście\nZmiana graniczna Preset zmienił się z ciągów na liczbę\nZmiana: Własność sprawdza wszystkie parametry w konfigubie\nZmiana: Powstawanie, jeśli połączenia sieciowe się nie utracą\nNowy: Synchronizacja władzy, objętości i stanu mute z UNDOK",
         "uk": "Зміна несправностей: вузол>=14, js-contoller>=4 і admin>=5 потрібно\nЗміна несправностей: PIN-кодування та перевірка терміну дії всіх параметрів в конфігурації UI\nЗміна несправностей: тип фронтальної частини_silicon.X.modes.select Подати зміни з рядка на номер\nЗміна: Перевірка дійсності всіх параметрів в config UI\nЗміна: Відновити сеанс, якщо мережеве підключення втрачено\nНовий: Синхронізація повноважень, об’ємних та матових станів з додатком UNDOK",
         "zh-cn": "排减变化:不de>=14, js-contoller>=4和专用>=5\n打破变化:加密和有效检查伊格特的所有参数\n打破变化:边界的类型:硅-X.modes.select B. 预 选\n变化:对伊格特的所有参数进行核查\n变化:如果网络联系丧失,重建会议\n新的:与联合国DOKapp的电力、数量和变性国家的统一"
-      },
-      "0.1.0": {
-        "en": "Breaking Changes: node>=14, js-contoller>=4 and admin>=5 required\nNew: json config UI\nNew: Re-establish session if network connection is lost\nNew: Remove obsolete unit testing\nFix: Prevent crashes if radio device is not reachable",
-        "de": "Breaking Changes: node>=14, js-contoller>=4 und admin>=5 erforderlich\nNeu: json config UI\nNeu: Wiederherstellen der Sitzung, wenn Netzwerkverbindung verloren geht\nNeu: Entfernen Sie obsolete Gerätetests\nFix: Verhindern Sie Abstürzen, wenn Funkgerät nicht erreichbar ist",
-        "ru": "Разрывные изменения: node>=14, js-contoller>=4 и admin>=5 требуется\nНовый: json config UI\nНовый: Восстановить сессию, если сетевое соединение потеряно\nНовый: Удалить устаревший блок тестирования\nИсправление: Предотвратите сбои, если радио устройство не доступно",
-        "pt": "Alterações de quebra: node>=14, js-contoller>=4 e admin>=5 obrigatório\nNovo: json config UI\nNovo: Reestabeleça sessão se a conexão de rede for perdida\nNovo: Remova o teste da unidade obsoleto\nCorrigir: prevenir falhas se o dispositivo de rádio não é acessível",
-        "nl": "Vertaling:\nNew:\nVertaling:\nVerwijder eenheid testen\nPrevent crashs if radio apparaat is niet bereikbaar",
-        "fr": "Changements de rupture: nodeю=14, js-contoller vaccin=4 et adminю=5 requis\nNouveau: json config UI\nNouveau: Réinitialiser la session si la connexion réseau est perdue\nNouveau: Supprimer les essais d'unité obsolète\nCorrection : Prévenir les accidents si l'appareil radio n'est pas accessible",
-        "it": "Cambiamenti di rottura: nodo>=14, js-contoller>=4 e admin>=5 richiesto\nNuovo: json config UI\nNuovo: Ristabilire la sessione se la connessione di rete è persa\nNuovo: Rimuovere i test delle unità obsolete\nFisso: Prevenire crash se il dispositivo radio non è raggiungibile",
-        "es": "Cambios de ruptura: node confianza=14, js-contoller confianza=4 y admin=5 requeridos\nNuevo: json config UI\nNuevo: restablecer sesión si se pierde la conexión de red\nNuevo: Eliminar las pruebas de unidad obsoleta\nCorrección: Evitar fallos si el dispositivo de radio no es accesible",
-        "pl": "Zmiany: węzeł >=14, js-contoller>=4 i admin>=5 wymaganych\nNowy: json config UI\nUstanowiona sesja, jeśli połączenia sieciowe się nie utracą\nNowy: Przeprowadzenie przestarzałych testów jednostkowych\nFix: Prevent rozbija się, jeśli urządzenie radiowe nie jest możliwe",
-        "uk": "Зміни змін: вузол>=14, js-contoller>=4 та admin>=5\nНовий: json config UI\nНовий: Відновити сеанс, якщо мережеве підключення втрачено\nНовий: Видаліть застарілий блок тестування\nВиправлення: Запобігання аварійних ситуацій, якщо радіопристрій не досягається",
-        "zh-cn": "排减变化:不de>=14, js-contoller>=4和 admin>=5\nNew: jsonconfig UI\n新的:如果网络联系丧失,重建会议\n新:消除过时的单位试验\nFix:如果无线电装置无法到达,那么预防事故"
       }
     },
     "titleLang": {

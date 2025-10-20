@@ -98,7 +98,7 @@ Documentation of the states and objects as well as general FSAPI documentation c
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.5.1-alpha.0 (2025-10-20)
 
 - (pdbjjens) Fix: Add GitHub as npm Trusted Publisher
 - (pdbjjens) Change: Update dependencies
@@ -131,12 +131,6 @@ Documentation of the states and objects as well as general FSAPI documentation c
 ### 0.2.0 (2024-01-28)
 
 - (pdbjjens) Change: Increase minor version number
-
-### 0.1.2 (2024-01-26) - 2024 maintenance release
-
-- (pdbjjens) Change: node>=16, js-contoller>=4 and admin>=5 required
-- (pdbjjens) New: Optionally display PIN code and limit to 4 digits in config GUI
-- (pdbjjens) Updated dependencies
 
 ## Legal Notices
 
