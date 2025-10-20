@@ -13,6 +13,8 @@
 
 [![NPM](https://nodei.co/npm/iobroker.frontier_silicon.png?downloads=true)](https://nodei.co/npm/iobroker.frontier_silicon/)
 
+[![NPM](https://nodei.co/npm/iobroker.frontier_silicon.svg)](https://nodei.co/npm/iobroker.frontier_silicon/)
+
 ## Info
 
 Provides support for media players, internet radios and SmartRadios equipped with a Frontier Silicon chipset using FSAPI.
