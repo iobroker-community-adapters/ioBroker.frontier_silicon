@@ -11,9 +11,7 @@
 
 **Tests:** ![Test and Release](https://github.com/iobroker-community-adapters/ioBroker.frontier_silicon/workflows/Test%20and%20Release/badge.svg)
 
-[![NPM](https://nodei.co/npm/iobroker.frontier_silicon.png?downloads=true)](https://nodei.co/npm/iobroker.frontier_silicon/)
-
-[![NPM](https://nodei.co/npm/iobroker.frontier_silicon.svg)](https://nodei.co/npm/iobroker.frontier_silicon/)
+[![NPM](https://nodei.co/npm/iobroker.frontier_silicon.svg?data=d,s)](https://www.npmjs.com/package/iobroker.frontier_silicon)
 
 ## Info
 
