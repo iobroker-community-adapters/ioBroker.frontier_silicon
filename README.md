@@ -100,8 +100,8 @@ Documentation of the states and objects as well as general FSAPI documentation c
 -->
 ### **WORK IN PROGRESS**
 
-(pdbjjens) Fix: Add GitHub as npm Trusted Publisher
-(pdbjjens) Change: Update dependencies
+- (pdbjjens) Fix: Add GitHub as npm Trusted Publisher
+- (pdbjjens) Change: Update dependencies
 
 ### 0.5.0 (2025-08-28) - 2025H2 maintenance release
 
