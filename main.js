@@ -25,20 +25,23 @@ let notifyTimestamp = 0;
 let lastSleepClear = 0;
 let polling = false;
 let sessionRetryCnt = SESSION_RETRYS;
-
+// Navigation List related variables
 let currentNavNumItems = 0;
 let currentNavNumItemsMax = 0;
 let currentNavIndex = 0;
 let currentNavKey = 0;
 let currentNavName = '';
+let currentNavPath = [];
 let currentNavType = 0;
 let currentNavSubtype = 0;
 let currentNavList = [];
+let currentNavItems = [];
 let currentNavListJson = [];
-const currentNavListChunk = 25;
+const currentNavListChunk = 25; // chunk size for segments of the complete nav list loaded from the device
+let currentNavChunks = []; // list of Chunk-Start-Keys (as strings) for infinite lists
+let currentNavChunkIndex = 0; // current Chunk-Index in currentNavChunks for infinite lists
+// mode select related variables
 let allModes = {};
-let currentNavChunks = []; // neu: Liste von Chunk-Start-Keys (als Strings) für infinite Listen
-let currentNavChunkIndex = 0; // neu: aktueller Chunk-Index in currentNavChunks
 
 class FrontierSilicon extends utils.Adapter {
     /**
@@ -130,7 +133,9 @@ class FrontierSilicon extends utils.Adapter {
         this.subscribeStates('modes.navigationDown');
         this.subscribeStates('modes.navigationSelect');
         this.subscribeStates('modes.navigationBack');
+        this.subscribeStates('modes.navigationHome');
         this.subscribeStates('modes.navigationSearch');
+        this.subscribeStates('modes.currentNavKey');
         this.subscribeStates('audio.mute');
         this.subscribeStates('audio.volume');
         this.subscribeStates('modes.readPresets');
@@ -351,520 +356,328 @@ class FrontierSilicon extends utils.Adapter {
                         await this.getAllPresets(true);
                         await adapter.setState(`modes.readPresets`, { val: true, ack: true });
                     } else if (zustand[3] === 'presetUp') {
-                        let tmpnr;
-                        let currMode;
-                        let len;
-                        await adapter.getStateAsync('modes.selected').then(async currentMode => {
-                            if (currentMode !== null && currentMode !== undefined && currentMode.val !== null) {
-                                currMode = currentMode.val.toString();
-                                await adapter
-                                    .getStateAsync(`modes.${currMode}.presets.available`)
-                                    .then(async available => {
-                                        if (
-                                            available !== null &&
-                                            available !== undefined &&
-                                            available.val !== null &&
-                                            available.val === true
-                                        ) {
-                                            await adapter
-                                                .getStateAsync(`modes.${currMode}.presets.number`)
-                                                .then(async numPres => {
-                                                    if (
-                                                        numPres !== null &&
-                                                        numPres !== undefined &&
-                                                        numPres.val !== null
-                                                    ) {
-                                                        len = numPres.val;
-                                                    }
-                                                });
-                                            await adapter.getStateAsync('modes.selectPreset').then(async selPres => {
-                                                if (selPres === null || selPres === undefined || selPres.val === null) {
-                                                    tmpnr = 0;
-                                                } else {
-                                                    tmpnr = Number(selPres.val);
-                                                    tmpnr++;
-                                                    if (tmpnr == len) {
-                                                        tmpnr = 0;
-                                                    }
-                                                }
-                                            });
-                                            let empty = true;
-                                            while (empty) {
+                        try {
+                            let tmpnr;
+                            let currMode;
+                            let len;
+                            await adapter.getStateAsync('modes.selected').then(async currentMode => {
+                                if (currentMode !== null && currentMode !== undefined && currentMode.val !== null) {
+                                    currMode = currentMode.val.toString();
+                                    await adapter
+                                        .getStateAsync(`modes.${currMode}.presets.available`)
+                                        .then(async available => {
+                                            if (
+                                                available !== null &&
+                                                available !== undefined &&
+                                                available.val !== null &&
+                                                available.val === true
+                                            ) {
                                                 await adapter
-                                                    .getStateAsync(`modes.${currMode}.presets.${tmpnr.toString()}.name`)
-                                                    .then(async name => {
-                                                        // skip empty preset names
+                                                    .getStateAsync(`modes.${currMode}.presets.number`)
+                                                    .then(async numPres => {
                                                         if (
-                                                            name === null ||
-                                                            name === undefined ||
-                                                            name.val === null ||
-                                                            name.val === undefined ||
-                                                            name.val === ''
+                                                            numPres !== null &&
+                                                            numPres !== undefined &&
+                                                            numPres.val !== null
                                                         ) {
+                                                            len = numPres.val;
+                                                        }
+                                                    });
+                                                await adapter
+                                                    .getStateAsync('modes.selectPreset')
+                                                    .then(async selPres => {
+                                                        if (
+                                                            selPres === null ||
+                                                            selPres === undefined ||
+                                                            selPres.val === null
+                                                        ) {
+                                                            tmpnr = 0;
+                                                        } else {
+                                                            tmpnr = Number(selPres.val);
                                                             tmpnr++;
                                                             if (tmpnr == len) {
                                                                 tmpnr = 0;
                                                             }
-                                                        } else {
-                                                            empty = false;
                                                         }
                                                     });
-                                            }
-                                        }
-                                    });
-
-                                this.log.debug(`Next Station: ${tmpnr}`);
-                                adapter.setState('modes.selectPreset', { val: tmpnr, ack: false });
-                                adapter.setState(`modes.presetUp`, { val: true, ack: true });
-                            }
-                        });
-                    } else if (zustand[3] === 'presetDown') {
-                        let tmpnr = 0;
-                        let currMode;
-                        let len;
-                        await adapter.getStateAsync('modes.selected').then(async currentMode => {
-                            if (currentMode !== null && currentMode !== undefined && currentMode.val !== null) {
-                                currMode = currentMode.val.toString();
-                                await adapter
-                                    .getStateAsync(`modes.${currMode}.presets.available`)
-                                    .then(async available => {
-                                        if (
-                                            available !== null &&
-                                            available !== undefined &&
-                                            available.val !== null &&
-                                            available.val === true
-                                        ) {
-                                            await adapter
-                                                .getStateAsync(`modes.${currMode}.presets.number`)
-                                                .then(async numPres => {
-                                                    if (
-                                                        numPres !== null &&
-                                                        numPres !== undefined &&
-                                                        numPres.val !== null
-                                                    ) {
-                                                        len = numPres.val;
-                                                    }
-                                                });
-                                            await adapter.getStateAsync('modes.selectPreset').then(async selPres => {
-                                                if (selPres === null || selPres === undefined || selPres.val === null) {
-                                                    tmpnr = 0;
-                                                } else {
-                                                    tmpnr = Number(selPres.val);
-                                                    tmpnr--;
-                                                    if (tmpnr < 0) {
-                                                        tmpnr = len - 1;
-                                                    }
+                                                let empty = true;
+                                                while (empty) {
+                                                    await adapter
+                                                        .getStateAsync(
+                                                            `modes.${currMode}.presets.${tmpnr.toString()}.name`,
+                                                        )
+                                                        .then(async name => {
+                                                            // skip empty preset names
+                                                            if (
+                                                                name === null ||
+                                                                name === undefined ||
+                                                                name.val === null ||
+                                                                name.val === undefined ||
+                                                                name.val === ''
+                                                            ) {
+                                                                tmpnr++;
+                                                                if (tmpnr == len) {
+                                                                    tmpnr = 0;
+                                                                }
+                                                            } else {
+                                                                empty = false;
+                                                            }
+                                                        });
                                                 }
-                                            });
+                                            }
+                                        });
 
-                                            let empty = true;
-                                            while (empty) {
+                                    this.log.debug(`Next Station: ${tmpnr}`);
+                                    adapter.setState('modes.selectPreset', { val: tmpnr, ack: false });
+                                    adapter.setState(`modes.presetUp`, { val: true, ack: true });
+                                }
+                            });
+                        } catch (err) {
+                            this.log.debug(`${err} in presetUp`);
+                        }
+                    } else if (zustand[3] === 'presetDown') {
+                        try {
+                            let tmpnr = 0;
+                            let currMode;
+                            let len;
+                            await adapter.getStateAsync('modes.selected').then(async currentMode => {
+                                if (currentMode !== null && currentMode !== undefined && currentMode.val !== null) {
+                                    currMode = currentMode.val.toString();
+                                    await adapter
+                                        .getStateAsync(`modes.${currMode}.presets.available`)
+                                        .then(async available => {
+                                            if (
+                                                available !== null &&
+                                                available !== undefined &&
+                                                available.val !== null &&
+                                                available.val === true
+                                            ) {
                                                 await adapter
-                                                    .getStateAsync(`modes.${currMode}.presets.${tmpnr.toString()}.name`)
-                                                    .then(async name => {
-                                                        // skip empty preset names
+                                                    .getStateAsync(`modes.${currMode}.presets.number`)
+                                                    .then(async numPres => {
                                                         if (
-                                                            name === null ||
-                                                            name === undefined ||
-                                                            name.val === null ||
-                                                            name.val === undefined ||
-                                                            name.val === ''
+                                                            numPres !== null &&
+                                                            numPres !== undefined &&
+                                                            numPres.val !== null
                                                         ) {
+                                                            len = numPres.val;
+                                                        }
+                                                    });
+                                                await adapter
+                                                    .getStateAsync('modes.selectPreset')
+                                                    .then(async selPres => {
+                                                        if (
+                                                            selPres === null ||
+                                                            selPres === undefined ||
+                                                            selPres.val === null
+                                                        ) {
+                                                            tmpnr = 0;
+                                                        } else {
+                                                            tmpnr = Number(selPres.val);
                                                             tmpnr--;
                                                             if (tmpnr < 0) {
                                                                 tmpnr = len - 1;
                                                             }
-                                                        } else {
-                                                            empty = false;
                                                         }
                                                     });
+
+                                                let empty = true;
+                                                while (empty) {
+                                                    await adapter
+                                                        .getStateAsync(
+                                                            `modes.${currMode}.presets.${tmpnr.toString()}.name`,
+                                                        )
+                                                        .then(async name => {
+                                                            // skip empty preset names
+                                                            if (
+                                                                name === null ||
+                                                                name === undefined ||
+                                                                name.val === null ||
+                                                                name.val === undefined ||
+                                                                name.val === ''
+                                                            ) {
+                                                                tmpnr--;
+                                                                if (tmpnr < 0) {
+                                                                    tmpnr = len - 1;
+                                                                }
+                                                            } else {
+                                                                empty = false;
+                                                            }
+                                                        });
+                                                }
                                             }
-                                        }
-                                    });
-                                this.log.debug(`Previous Station: ${tmpnr}`);
-                                adapter.setState('modes.selectPreset', { val: tmpnr, ack: false });
-                                adapter.setState(`modes.presetDown`, { val: true, ack: true });
-                            }
-                        });
+                                        });
+                                    this.log.debug(`Previous Station: ${tmpnr}`);
+                                    adapter.setState('modes.selectPreset', { val: tmpnr, ack: false });
+                                    adapter.setState(`modes.presetDown`, { val: true, ack: true });
+                                }
+                            });
+                        } catch (err) {
+                            this.log.debug(`${err} in presetDown`);
+                        }
                     } else if (zustand[3] === 'navigationUp') {
                         try {
-                            let nextKey = 0;
-                            let tmpnr = currentNavIndex;
-                            this.log.debug(
-                                `In navigationUp: Current Index: ${tmpnr} current key: ${currentNavList[tmpnr] ? currentNavList[tmpnr].$.key : 'n/a'} currentNavNumItemsMax: ${currentNavNumItemsMax} currentNavNumItems: ${currentNavNumItems}`,
-                            );
-
-                            tmpnr += 1;
-                            if (currentNavNumItems > 0) {
-                                // normale Liste mit bekannter Länge
-                                if (tmpnr >= currentNavList.length) {
-                                    let ceilingItemsMax = Math.ceil(currentNavNumItemsMax / currentNavListChunk);
-                                    let ceilingItems = Math.ceil(currentNavNumItems / currentNavListChunk);
-
-                                    if (ceilingItemsMax < ceilingItems) {
-                                        // Es gibt noch mehr Items zu laden
-                                        const nextChunkStart = ceilingItemsMax * currentNavListChunk - 1;
-                                        this.log.debug(
-                                            `Loading more items for navigationUp from index ${nextChunkStart} ceilingItemsMax=${ceilingItemsMax} ceilingItems=${ceilingItems}`,
-                                        );
-                                        await this.updateNavList(nextChunkStart);
-                                    } else if (ceilingItemsMax == ceilingItems && ceilingItems > 0) {
-                                        // Letzter Chunk erreicht, zurück zum Anfang
-                                        this.log.debug('Last chunk reached, reloading list from beginning');
-                                        await this.updateNavList();
-                                    }
-                                    tmpnr = 0; // Bei neuem Chunk immer bei Index 0 starten
-                                    nextKey = Number(currentNavList[tmpnr].$.key);
-                                } else {
-                                    nextKey = Number(currentNavList[tmpnr].$.key);
-                                }
-                            } else if (currentNavNumItems === -1) {
-                                // infinite Liste: Chunk-Tracking korrekt nutzen und Wrap-Logik
-                                if (tmpnr >= currentNavList.length) {
-                                    // Wir sind am Ende des aktuellen Chunks
-                                    this.log.debug(
-                                        `Infinite list: end of current chunk reached (len=${currentNavList.length}, chunkSize=${currentNavListChunk}), currentChunkIndex=${currentNavChunkIndex}, knownChunks=${currentNavChunks.length}`,
-                                    );
-
-                                    if (currentNavChunkIndex < currentNavChunks.length - 1) {
-                                        // Es gibt einen aufgezeichneten nächsten Chunk
-                                        const nextChunkId = currentNavChunks[currentNavChunkIndex + 1];
-                                        const startParam = nextChunkId === '-1' ? -1 : Number(nextChunkId);
-                                        this.log.debug(
-                                            `Infinite list: loading next recorded chunk, chunkIndex ${currentNavChunkIndex} -> ${currentNavChunkIndex + 1}`,
-                                        );
-                                        await this.updateNavList(startParam);
-                                    } else {
-                                        // Kein aufgezeichneter nächster Chunk - check ob aktueller Chunk vollständig ist
-                                        if (currentNavList.length < currentNavListChunk) {
-                                            // Aktueller Chunk ist der letzte Chunk (unvollständig) -> WRAP zur ersten Seite
-                                            this.log.debug(
-                                                `Infinite list: last chunk detected (${currentNavList.length} < ${currentNavListChunk}), wrapping to first chunk`,
-                                            );
-                                            await this.updateNavList(-1);
-                                        } else {
-                                            // Lade nächsten Chunk dynamisch anhand des letzten Keys
-                                            const lastKey = currentNavList[currentNavList.length - 1].$.key;
-                                            this.log.debug(
-                                                `Infinite list: loading next chunk from last key ${lastKey}, currentChunks before=${JSON.stringify(currentNavChunks)}`,
-                                            );
-                                            await this.updateNavList(Number(lastKey));
-                                            this.log.debug(
-                                                `Infinite list: after updateNavList, currentChunks=${JSON.stringify(currentNavChunks)}, currentNavChunkIndex=${currentNavChunkIndex}`,
-                                            );
-                                        }
-                                    }
-
-                                    tmpnr = 0;
-                                    nextKey = currentNavList[tmpnr]
-                                        ? Number(currentNavList[tmpnr].$.key)
-                                        : Number(undefined);
-                                } else {
-                                    nextKey = Number(currentNavList[tmpnr].$.key);
-                                }
-                            }
-
-                            if (
-                                nextKey !== undefined &&
-                                nextKey !== null &&
-                                tmpnr >= 0 &&
-                                tmpnr < currentNavList.length &&
-                                currentNavNumItems !== 0
-                            ) {
-                                //let name = '';
-
-                                currentNavList[tmpnr].field.forEach(f => {
-                                    switch (f.$.name) {
-                                        case 'name':
-                                            currentNavName = f.c8_array[0];
-                                            break;
-                                        case 'type':
-                                            currentNavType = Number(f.u8[0]);
-                                            break;
-                                        case 'subtype':
-                                            currentNavSubtype = Number(f.u8[0]);
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                });
-
-                                currentNavIndex = tmpnr;
-                                this.log.debug(
-                                    `NavigationUp: Next Item: Index=${currentNavIndex}, Key=${nextKey}, Name=${currentNavName}`,
-                                );
-                                await adapter.setState('modes.currentNavIndex', {
-                                    val: currentNavIndex,
-                                    ack: true,
-                                });
-                                await adapter.setState('modes.currentNavKey', {
-                                    val: nextKey,
-                                    ack: true,
-                                });
-                                await adapter.setState(`modes.currentNavName`, { val: currentNavName, ack: true });
-
-                                const obj = await this.getObjectAsync('modes.currentNavIndex');
-                                if (obj && obj.native) {
-                                    obj.native.currentNavIndex.value = currentNavIndex;
-                                    obj.native.currentNavKey.value = nextKey;
-                                    obj.native.currentNavName.value = currentNavName;
-                                    obj.native.currentNavType.value = currentNavType;
-                                    obj.native.currentNavSubtype.value = currentNavSubtype;
-                                    obj.native.currentNavNumItemsMax.value = currentNavNumItemsMax;
-                                    await this.setObject('modes.currentNavIndex', obj);
-                                }
-
-                                await adapter.setState(`modes.navigationUp`, { val: true, ack: true });
-                            } else {
-                                this.log.error(
-                                    `navigationUp: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavList.length=${currentNavList.length}`,
-                                );
-                                throw new Error('Invalid navigation state or no items available');
-                            }
+                            this.log.debug('Navigation Up');
+                            await this.navigateUp();
+                            await this.setState(`modes.navigationUp`, { val: true, ack: true });
                         } catch (err) {
                             this.log.debug(`${err} in navigationUp`);
                         }
                     } else if (zustand[3] === 'navigationDown') {
                         try {
-                            let nextKey = 0;
-                            let tmpnr = currentNavIndex;
-                            this.log.debug(
-                                `In navigationDown: Current Index: ${tmpnr} current key: ${currentNavList[tmpnr] ? currentNavList[tmpnr].$.key : 'n/a'} currentNavNumItemsMax: ${currentNavNumItemsMax} currentNavNumItems: ${currentNavNumItems}`,
-                            );
-
-                            tmpnr -= 1;
-
-                            if (currentNavNumItems > 0) {
-                                // normale Liste mit bekannter Länge
-                                if (tmpnr < 0) {
-                                    let floorItemsMax = Math.floor(currentNavNumItemsMax / currentNavListChunk);
-                                    let floorItems = Math.floor(currentNavNumItems / currentNavListChunk);
-                                    let remainderItemsMax = currentNavNumItemsMax % currentNavListChunk;
-
-                                    if (floorItemsMax > 1) {
-                                        const prevChunkStart =
-                                            remainderItemsMax > 0
-                                                ? (floorItemsMax - 1) * currentNavListChunk - 1
-                                                : (floorItemsMax - 2) * currentNavListChunk - 1;
-                                        this.log.debug(
-                                            `Loading previous items for navigationDown from index ${prevChunkStart} floorItemsMax=${floorItemsMax} remainderItemsMax=${remainderItemsMax}`,
-                                        );
-                                        await this.updateNavList(prevChunkStart);
-
-                                        tmpnr = currentNavList.length - 1;
-                                        nextKey = Number(currentNavList[tmpnr].$.key);
-                                    } else if (floorItemsMax == 1) {
-                                        const endChunkStart = Math.max(0, floorItems * currentNavListChunk - 1);
-                                        this.log.debug(
-                                            `At beginning of first list, loading from end at index ${endChunkStart}`,
-                                        );
-                                        await this.updateNavList(endChunkStart);
-                                        tmpnr = currentNavList.length - 1;
-                                        nextKey = Number(currentNavList[tmpnr].$.key);
-                                    } else {
-                                        this.log.debug('Single chunk list, jumping to last item');
-                                        tmpnr = currentNavList.length - 1;
-                                        if (tmpnr >= 0) {
-                                            nextKey = Number(currentNavList[tmpnr].$.key);
-                                        }
-                                    }
-                                } else {
-                                    nextKey = Number(currentNavList[tmpnr].$.key);
-                                }
-                            } else if (currentNavNumItems === -1) {
-                                // numItems is -1, infinite list: nutze chunk-tracking
-                                if (tmpnr < 0) {
-                                    // Wir sind vor dem ersten Item des aktuellen Chunks
-                                    if (currentNavChunkIndex > 0) {
-                                        // Es gibt einen vorherigen Chunk
-                                        const prevIndex = currentNavChunkIndex - 1;
-                                        const prevChunkId = currentNavChunks[prevIndex];
-                                        const startParam = prevChunkId === '-1' ? -1 : Number(prevChunkId);
-                                        this.log.debug(
-                                            `Infinite list: loading previous chunk (from chunkIndex ${currentNavChunkIndex} -> ${prevIndex})`,
-                                        );
-                                        await this.updateNavList(startParam);
-                                        this.log.debug(
-                                            `After loading previous chunk: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}, currentNavChunks=${JSON.stringify(currentNavChunks)}`,
-                                        );
-                                        tmpnr = currentNavList.length - 1;
-                                        nextKey = Number(currentNavList[tmpnr].$.key);
-                                    } else {
-                                        // Wir sind am Anfang (Chunk 0), gehe zum LETZTEN Chunk durch Wrapping
-                                        this.log.debug(
-                                            'Infinite list: at beginning of first chunk, wrapping to last chunk',
-                                        );
-                                        if (currentNavChunks.length > 0) {
-                                            const lastIdx = currentNavChunks.length - 1;
-                                            const lastChunkId = currentNavChunks[lastIdx];
-                                            const startParam = lastChunkId === '-1' ? -1 : Number(lastChunkId);
-                                            this.log.debug(
-                                                `Loading last chunk for wrap-around (chunkIndex ${lastIdx})`,
-                                            );
-                                            await this.updateNavList(startParam);
-                                            this.log.debug(
-                                                `After wrapping to last chunk: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
-                                            );
-                                            tmpnr = currentNavList.length - 1;
-                                            nextKey = Number(currentNavList[tmpnr].$.key);
-                                        } else {
-                                            // Keine Chunks vorhanden, lade Chunk 0
-                                            this.log.debug('Infinite list: no chunks recorded, loading from start');
-                                            await this.updateNavList(-1);
-                                            this.log.debug(
-                                                `After loading from start: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
-                                            );
-                                            tmpnr = currentNavList.length - 1;
-                                            nextKey = Number(currentNavList[tmpnr].$.key);
-                                        }
-                                    }
-                                } else {
-                                    nextKey = Number(currentNavList[tmpnr].$.key);
-                                }
-                            }
-
-                            if (
-                                nextKey !== undefined &&
-                                nextKey !== null &&
-                                tmpnr >= 0 &&
-                                tmpnr < currentNavList.length &&
-                                currentNavNumItems !== 0
-                            ) {
-                                currentNavList[tmpnr].field.forEach(f => {
-                                    switch (f.$.name) {
-                                        case 'name':
-                                            currentNavName = f.c8_array[0];
-                                            break;
-                                        case 'type':
-                                            currentNavType = Number(f.u8[0]);
-                                            break;
-                                        case 'subtype':
-                                            currentNavSubtype = Number(f.u8[0]);
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                });
-                                currentNavIndex = tmpnr;
-
-                                this.log.debug(
-                                    `Previous Item: Index=${currentNavIndex}, Key=${nextKey}, Name=${currentNavName}`,
-                                );
-                                await adapter.setState('modes.currentNavIndex', { val: currentNavIndex, ack: true });
-                                await adapter.setState('modes.currentNavKey', {
-                                    val: nextKey,
-                                    ack: true,
-                                });
-                                await adapter.setState(`modes.currentNavName`, { val: currentNavName, ack: true });
-
-                                const obj = await this.getObjectAsync('modes.currentNavIndex');
-                                if (obj && obj.native) {
-                                    obj.native.currentNavIndex.value = currentNavIndex;
-                                    obj.native.currentNavKey.value = nextKey;
-                                    obj.native.currentNavName.value = currentNavName;
-                                    obj.native.currentNavType.value = currentNavType;
-                                    obj.native.currentNavSubtype.value = currentNavSubtype;
-                                    await this.setObject('modes.currentNavIndex', obj);
-                                }
-
-                                await adapter.setState(`modes.navigationDown`, { val: true, ack: true });
-                            } else {
-                                this.log.error(
-                                    `navigationDown: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavList.length=${currentNavList.length}`,
-                                );
-                                throw new Error('Invalid navigation state or no items available');
-                            }
+                            this.log.debug('Navigation Down');
+                            await this.navigateDown();
+                            await this.setState(`modes.navigationDown`, { val: true, ack: true });
                         } catch (err) {
                             this.log.debug(`${err} in navigationDown`);
                         }
                     } else if (zustand[3] === 'navigationSelect') {
                         try {
-                            let currKey;
-                            const currenNavKey = await adapter.getStateAsync('modes.currentNavKey');
-                            if (currenNavKey !== null && currenNavKey !== undefined && currenNavKey.val !== null) {
-                                currKey = Number(currenNavKey.val);
-                                if (currentNavType == 0) {
-                                    // directory
-                                    await this.enableNavIfNeccessary();
-                                    let response = await this.callAPI(
-                                        'netRemote.nav.action.navigate',
-                                        currKey.toString(),
-                                    );
-                                    if (response && response.success) {
-                                        await this.updateNavList();
-                                        await adapter.setState(`modes.navigationSelect`, { val: true, ack: true });
-                                    }
-                                } else if (currentNavType == 1) {
-                                    // Playable item
-                                    await this.enableNavIfNeccessary();
-                                    const response = await this.callAPI(
-                                        'netRemote.nav.action.selectItem',
-                                        currKey.toString(),
-                                    );
-                                    if (response && response.success) {
-                                        await this.enableNavIfNeccessary();
-                                        await adapter.setState(`modes.navigationSelect`, {
-                                            val: true,
-                                            ack: true,
-                                        });
-                                    }
-                                } else if (currentNavType == 2) {
-                                    // Search directory
-                                    let searchTerm = '';
-                                    const currentSearch = await adapter.getStateAsync('modes.navigationSearch');
-                                    if (
-                                        currentSearch !== null &&
-                                        currentSearch !== undefined &&
-                                        currentSearch.val !== null
-                                    ) {
-                                        searchTerm = currentSearch.val.toString();
-                                        let response = await this.callAPI('netRemote.nav.searchTerm', searchTerm);
-                                        if (response.success) {
-                                            this.log.debug(`Sent Search Term: ${searchTerm}`);
-                                        }
-                                    }
-                                    let response = await this.callAPI('netRemote.nav.searchTerm');
-                                    if (response.success && response.result.value[0].c8_array[0].trim() == searchTerm) {
-                                        this.log.debug(`SearchTerm verified`);
-                                        await this.enableNavIfNeccessary();
-                                        response = await this.callAPI(
-                                            'netRemote.nav.action.navigate',
-                                            currKey.toString(),
-                                        );
-                                        if (response && response.success) {
-                                            await this.updateNavList();
-                                            await adapter.setState(`modes.navigationSelect`, { val: true, ack: true });
-                                        }
-                                    } else {
-                                        this.log.debug(
-                                            `SearchTerm error: ${response.result.value[0].c8_array[0].trim()} <> ${searchTerm}`,
-                                        );
-                                        throw new Error('Search term verification failed');
-                                    }
-                                }
+                            let response = await this.navigateSelect();
+                            if (response && response.success) {
+                                await adapter.setState(`modes.navigationSelect`, { val: true, ack: true });
+                            } else {
+                                this.log.debug(
+                                    `navigationSelect failed: ${response.result.status[0].toString()} - ${response.result.value[0].c8_array[0]}`,
+                                );
+                                throw new Error('Navigation select failed');
                             }
                         } catch (err) {
                             this.log.debug(`${err} in navigationSelect`);
                         }
                     } else if (zustand[3] === 'navigationBack') {
                         try {
-                            if (currentNavNumItems > 0) {
-                                // only go back if navigation is possible
+                            if (currentNavNumItems >= 0) {
+                                // only go back if navigation is possible (numItems is known and not -1)
                                 await this.enableNavIfNeccessary();
                                 let response = await this.callAPI('netRemote.nav.action.navigate', '0xFFFFFFFF');
                                 if (response.success) {
                                     await this.updateNavList();
+                                } else {
+                                    throw new Error(
+                                        `${response.result.status[0].toString()}: navigation top level reached`,
+                                    );
+                                }
+
+                                let previousKey = currentNavPath.pop();
+                                // find previousKey in currentNavList to update currentNavIndex, if not found set index to 0
+                                //let currentNavIndex = 0;
+                                if (
+                                    previousKey &&
+                                    previousKey !== undefined &&
+                                    previousKey !== null &&
+                                    previousKey > currentNavKey
+                                ) {
+                                    this.log.debug(
+                                        `UpdateNavigation: Received navKey ${previousKey} > currentNavKey ${currentNavKey} --> NavigateUp.`,
+                                    );
+                                    let i = previousKey - currentNavKey;
+                                    while (i > 0) {
+                                        this.log.debug(
+                                            `UpdateNavigation: Navigating up to key ${currentNavKey + i} - i is ${i}...`,
+                                            // navigateUp
+                                        );
+                                        await this.navigateUp();
+                                        i--;
+                                    }
                                 }
                             }
                             await adapter.setState(`modes.navigationBack`, { val: true, ack: true });
                         } catch (err) {
                             this.log.debug(`${err} in navigationBack`);
                         }
+                    } else if (zustand[3] === 'navigationHome') {
+                        try {
+                            // reset nav.state, as we are navigating to the top level then clear saved navigation path and load first chunk of NavList
+                            let response = await this.callAPI('netRemote.nav.state', '0');
+                            if (response.success) {
+                                currentNavPath = [];
+                                await this.updateNavList();
+                            } else {
+                                throw new Error(
+                                    `${response.result.status[0].toString()}: navigation top level reached`,
+                                );
+                            }
+                            await adapter.setState(`modes.navigationHome`, { val: true, ack: true });
+                        } catch (err) {
+                            this.log.debug(`${err} in navigationHome`);
+                        }
                     } else if (zustand[3] === 'navigationSearch') {
                         try {
+                            let searchTerm = '';
+                            this.log.debug(`navigationSearch set to ${state.val}, updating searchTerm if necessary...`);
+                            // set searchTerm in device and verify it
+                            if (state.val !== null && state.val !== undefined) {
+                                searchTerm = state.val.toString().trim();
+                                let response = await this.callAPI('netRemote.nav.searchTerm', searchTerm);
+                                if (response.success) {
+                                    this.log.debug(`Sent Search Term: ${searchTerm}`);
+                                } else {
+                                    this.log.debug(`Setting searchTerm ${searchTerm} failed`);
+                                    throw new Error(`Setting searchTerm ${searchTerm} failed`);
+                                }
+                            }
+                            let response = await this.callAPI('netRemote.nav.searchTerm');
+                            if (response.success && response.result.value[0].c8_array[0].trim() == searchTerm) {
+                                this.log.debug(`SearchTerm verified`);
+                            } else {
+                                this.log.debug(`Verification of searchTerm ${searchTerm} failed`);
+                                throw new Error(`Verification of searchTerm ${searchTerm} failed`);
+                            }
                             await adapter.setState(`modes.navigationSearch`, { ack: true });
                         } catch (err) {
                             this.log.debug(`${err} in navigationSearch`);
+                        }
+                    } else if (zustand[3] === 'currentNavKey') {
+                        try {
+                            let nextKey = 0;
+                            let tmpnr = 0;
+                            this.log.debug(`CurrentNavKey set to ${state.val}, updating navigation if necessary...`);
+                            // load chunk for navKey if not in currentNavList and update currentNavIndex
+                            const response = await this.loadChunkForNavKey(state.val);
+                            if (response && response.success) {
+                                this.log.debug(
+                                    `Chunk ${response.result.chunk} loaded for navKey ${response.result.key}, currentNavIndex: ${response.result.index}`,
+                                );
+
+                                nextKey = response.result.key;
+                                tmpnr = response.result.index;
+                                // update navigation states
+
+                                if (
+                                    nextKey !== undefined &&
+                                    nextKey !== null &&
+                                    tmpnr >= 0 &&
+                                    tmpnr < currentNavList.length &&
+                                    currentNavNumItems !== 0
+                                ) {
+                                    currentNavIndex = tmpnr;
+                                    currentNavKey = nextKey;
+
+                                    await this.updateNavStates();
+                                } else {
+                                    this.log.debug(
+                                        `set currentNavKey: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                                    );
+                                    throw new Error('Invalid navigation state or no items available');
+                                }
+                                this.log.debug(
+                                    `set currentNavKey successfull : currentNavKey=${currentNavKey}, currentNavIndex=${currentNavIndex}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                                );
+
+                                const result = await this.navigateSelect();
+                                if (result && result.success) {
+                                    this.log.debug(`navigateSelect successful for navKey ${state.val}`);
+                                } else {
+                                    this.log.debug(`navigateSelect failed for navKey ${state.val}`);
+                                    throw new Error(`navigateSelect failed for navKey ${state.val}`);
+                                }
+                            } else {
+                                await this.setState(`modes.currentNavKey`, { val: state.val, ack: true });
+                                throw new Error(`navKey ${state.val} not found or invalid`);
+                            }
+                        } catch (err) {
+                            this.log.debug(`${err} while setting currentNavKey`);
                         }
                     }
 
@@ -1286,6 +1099,429 @@ class FrontierSilicon extends utils.Adapter {
         });
         await Promise.all(proms);
     }
+    /**
+     * FSAPI navigation functions
+     */
+
+    /**
+     * navigate up in current navigation list
+     */
+    async navigateUp() {
+        try {
+            let nextKey = 0;
+            let tmpnr = currentNavIndex;
+            this.log.debug(
+                `In navigateUp: Current Index: ${tmpnr} current key: ${currentNavList[tmpnr] ? currentNavList[tmpnr].$.key : 'n/a'} currentNavNumItemsMax: ${currentNavNumItemsMax} currentNavNumItems: ${currentNavNumItems}`,
+            );
+
+            tmpnr += 1;
+            if (currentNavNumItems > 0) {
+                // normale Liste mit bekannter Länge
+                if (tmpnr >= currentNavList.length) {
+                    let ceilingItemsMax = Math.ceil(currentNavNumItemsMax / currentNavListChunk);
+                    let ceilingItems = Math.ceil(currentNavNumItems / currentNavListChunk);
+
+                    if (ceilingItemsMax < ceilingItems) {
+                        // Es gibt noch mehr Items zu laden
+                        const nextChunkStart = ceilingItemsMax * currentNavListChunk - 1;
+                        this.log.debug(
+                            `Loading more items for navigateUp from index ${nextChunkStart} ceilingItemsMax=${ceilingItemsMax} ceilingItems=${ceilingItems}`,
+                        );
+                        await this.updateNavList(nextChunkStart);
+                    } else if (ceilingItemsMax == ceilingItems && ceilingItems > 0) {
+                        // Letzter Chunk erreicht, zurück zum Anfang
+                        this.log.debug('Last chunk reached, reloading list from beginning');
+                        await this.updateNavList();
+                    }
+                    tmpnr = 0; // Bei neuem Chunk immer bei Index 0 starten
+                    nextKey = Number(currentNavList[tmpnr].$.key);
+                } else {
+                    nextKey = Number(currentNavList[tmpnr].$.key);
+                }
+            } else if (currentNavNumItems === -1) {
+                // infinite Liste: Chunk-Tracking korrekt nutzen und Wrap-Logik
+                if (tmpnr >= currentNavList.length) {
+                    // Wir sind am Ende des aktuellen Chunks
+                    this.log.debug(
+                        `Infinite list: end of current chunk reached (len=${currentNavList.length}, chunkSize=${currentNavListChunk}), currentNavChunkIndex=${currentNavChunkIndex}, knownChunks=${currentNavChunks.length}`,
+                    );
+
+                    if (currentNavChunkIndex < currentNavChunks.length - 1) {
+                        // Es gibt einen aufgezeichneten nächsten Chunk
+                        const nextChunkId = currentNavChunks[currentNavChunkIndex + 1];
+                        const startParam = nextChunkId === '-1' ? -1 : Number(nextChunkId);
+                        this.log.debug(
+                            `Infinite list: loading next recorded chunk, chunkIndex ${currentNavChunkIndex} -> ${currentNavChunkIndex + 1}`,
+                        );
+                        await this.updateNavList(startParam);
+                    } else {
+                        // Kein aufgezeichneter nächster Chunk - check ob aktueller Chunk vollständig ist
+                        if (currentNavList.length < currentNavListChunk) {
+                            // Aktueller Chunk ist der letzte Chunk (unvollständig) -> WRAP zur ersten Seite
+                            this.log.debug(
+                                `Infinite list: last chunk detected (${currentNavList.length} < ${currentNavListChunk}), wrapping to first chunk`,
+                            );
+                            await this.updateNavList(-1);
+                        } else {
+                            // Lade nächsten Chunk dynamisch anhand des letzten Keys
+                            const lastKey = currentNavList[currentNavList.length - 1].$.key;
+                            this.log.debug(
+                                `Infinite list: loading next chunk from last key ${lastKey}, currentChunks before=${JSON.stringify(currentNavChunks)}`,
+                            );
+                            await this.updateNavList(Number(lastKey));
+                            this.log.debug(
+                                `Infinite list: after updateNavList, currentChunks=${JSON.stringify(currentNavChunks)}, currentNavChunkIndex=${currentNavChunkIndex}`,
+                            );
+                        }
+                    }
+
+                    tmpnr = 0;
+                    nextKey = currentNavList[tmpnr] ? Number(currentNavList[tmpnr].$.key) : Number(undefined);
+                } else {
+                    nextKey = Number(currentNavList[tmpnr].$.key);
+                }
+            }
+
+            if (
+                nextKey !== undefined &&
+                nextKey !== null &&
+                tmpnr >= 0 &&
+                tmpnr < currentNavList.length &&
+                currentNavNumItems !== 0
+            ) {
+                currentNavIndex = tmpnr;
+                currentNavKey = nextKey;
+                await this.updateNavStates();
+            } else {
+                this.log.debug(
+                    `navigateUp: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                );
+                throw new Error('Invalid navigation state or no items available');
+            }
+        } catch (err) {
+            this.log.debug(`${err} in navigateUp`);
+        }
+    }
+    /**
+     * navigate down in current navigation list
+     */
+
+    async navigateDown() {
+        try {
+            let nextKey = 0;
+            let tmpnr = currentNavIndex;
+            this.log.debug(
+                `In navigateDown: Current Index: ${tmpnr} current key: ${currentNavList[tmpnr] ? currentNavList[tmpnr].$.key : 'n/a'} currentNavNumItemsMax: ${currentNavNumItemsMax} currentNavNumItems: ${currentNavNumItems}`,
+            );
+
+            tmpnr -= 1;
+
+            if (currentNavNumItems > 0) {
+                // normale Liste mit bekannter Länge
+                if (tmpnr < 0) {
+                    let floorItemsMax = Math.floor(currentNavNumItemsMax / currentNavListChunk);
+                    let floorItems = Math.floor(currentNavNumItems / currentNavListChunk);
+                    let remainderItemsMax = currentNavNumItemsMax % currentNavListChunk;
+
+                    if (floorItemsMax > 1) {
+                        const prevChunkStart =
+                            remainderItemsMax > 0
+                                ? (floorItemsMax - 1) * currentNavListChunk - 1
+                                : (floorItemsMax - 2) * currentNavListChunk - 1;
+                        this.log.debug(
+                            `Loading previous items for navigateDown from index ${prevChunkStart} floorItemsMax=${floorItemsMax} remainderItemsMax=${remainderItemsMax}`,
+                        );
+                        await this.updateNavList(prevChunkStart);
+
+                        tmpnr = currentNavList.length - 1;
+                        nextKey = Number(currentNavList[tmpnr].$.key);
+                    } else if (floorItemsMax == 1) {
+                        const endChunkStart = Math.max(0, floorItems * currentNavListChunk - 1);
+                        this.log.debug(`At beginning of first list, loading from end at index ${endChunkStart}`);
+                        await this.updateNavList(endChunkStart);
+                        tmpnr = currentNavList.length - 1;
+                        nextKey = Number(currentNavList[tmpnr].$.key);
+                    } else {
+                        this.log.debug('Single chunk list, jumping to last item');
+                        tmpnr = currentNavList.length - 1;
+                        if (tmpnr >= 0) {
+                            nextKey = Number(currentNavList[tmpnr].$.key);
+                        }
+                    }
+                } else {
+                    nextKey = Number(currentNavList[tmpnr].$.key);
+                }
+            } else if (currentNavNumItems === -1) {
+                // numItems is -1, infinite list: nutze chunk-tracking
+                if (tmpnr < 0) {
+                    // Wir sind vor dem ersten Item des aktuellen Chunks
+                    if (currentNavChunkIndex > 0) {
+                        // Es gibt einen vorherigen Chunk
+                        const prevIndex = currentNavChunkIndex - 1;
+                        const prevChunkId = currentNavChunks[prevIndex];
+                        const startParam = prevChunkId === '-1' ? -1 : Number(prevChunkId);
+                        this.log.debug(
+                            `Infinite list: loading previous chunk (from chunkIndex ${currentNavChunkIndex} -> ${prevIndex})`,
+                        );
+                        await this.updateNavList(startParam);
+                        this.log.debug(
+                            `After loading previous chunk: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}, currentNavChunks=${JSON.stringify(currentNavChunks)}`,
+                        );
+                        tmpnr = currentNavList.length - 1;
+                        nextKey = Number(currentNavList[tmpnr].$.key);
+                    } else {
+                        // Wir sind am Anfang (Chunk 0), gehe zum LETZTEN Chunk durch Wrapping
+                        this.log.debug('Infinite list: at beginning of first chunk, wrapping to last chunk');
+                        if (currentNavChunks.length > 0) {
+                            const lastIdx = currentNavChunks.length - 1;
+                            const lastChunkId = currentNavChunks[lastIdx];
+                            const startParam = lastChunkId === '-1' ? -1 : Number(lastChunkId);
+                            this.log.debug(`Loading last chunk for wrap-around (chunkIndex ${lastIdx})`);
+                            await this.updateNavList(startParam);
+                            this.log.debug(
+                                `After wrapping to last chunk: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
+                            );
+                            tmpnr = currentNavList.length - 1;
+                            nextKey = Number(currentNavList[tmpnr].$.key);
+                        } else {
+                            // Keine Chunks vorhanden, lade Chunk 0
+                            this.log.debug('Infinite list: no chunks recorded, loading from start');
+                            await this.updateNavList(-1);
+                            this.log.debug(
+                                `After loading from start: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
+                            );
+                            tmpnr = currentNavList.length - 1;
+                            nextKey = Number(currentNavList[tmpnr].$.key);
+                        }
+                    }
+                } else {
+                    nextKey = Number(currentNavList[tmpnr].$.key);
+                }
+            }
+
+            if (
+                nextKey !== undefined &&
+                nextKey !== null &&
+                tmpnr >= 0 &&
+                tmpnr < currentNavList.length &&
+                currentNavNumItems !== 0
+            ) {
+                currentNavIndex = tmpnr;
+                currentNavKey = nextKey;
+                await this.updateNavStates();
+            } else {
+                this.log.error(
+                    `navigateDown: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                );
+                throw new Error('Invalid navigation state or no items available');
+            }
+        } catch (err) {
+            this.log.debug(`${err} in navigateDown`);
+        }
+    }
+
+    /**
+     * Select current navigation list item
+     */
+    async navigateSelect() {
+        const answer = {};
+        answer.success = false;
+        let navResponse = {};
+        let navSuccess = false;
+
+        try {
+            let currKey;
+
+            const currenNavKey = await this.getStateAsync('modes.currentNavKey');
+            if (currenNavKey !== null && currenNavKey !== undefined && currenNavKey.val !== null) {
+                currKey = Number(currenNavKey.val);
+
+                //currKey = currentNavKey;
+                if (currentNavType == 0) {
+                    // directory
+                    currentNavPath.push(currKey); // save current path for navigation back
+                    await this.enableNavIfNeccessary();
+                    let response = await this.callAPI('netRemote.nav.action.navigate', currKey.toString());
+                    if (response && response.success) {
+                        await this.updateNavList();
+                        navSuccess = true;
+                    } else {
+                        navResponse = response.result;
+                        navSuccess = false;
+                    }
+                } else if (currentNavType == 1) {
+                    // Playable item
+                    await this.enableNavIfNeccessary();
+                    const response = await this.callAPI('netRemote.nav.action.selectItem', currKey.toString());
+                    if (response && response.success) {
+                        //await this.enableNavIfNeccessary();
+                        navSuccess = true;
+                    } else {
+                        navResponse = response.result;
+                        navSuccess = false;
+                    }
+                } else if (currentNavType == 2) {
+                    // Search directory
+                    await this.enableNavIfNeccessary();
+                    const response = await this.callAPI('netRemote.nav.action.navigate', currKey.toString());
+                    if (response && response.success) {
+                        await this.updateNavList();
+                        navSuccess = true;
+                    } else {
+                        navResponse = response.result;
+                        navSuccess = false;
+                    }
+                }
+            }
+        } catch (err) {
+            this.log.debug(`${err} in navigateSelect`);
+            navSuccess = false;
+        }
+        this.log.debug(`navResponse: ${JSON.stringify(navResponse)} - navSuccess: ${navSuccess}`);
+        answer.result = navResponse;
+        answer.success = navSuccess;
+        return answer;
+    }
+
+    /**
+     * Load fitting chunk for Key
+     *
+     * @param navKey
+     */
+    async loadChunkForNavKey(navKey) {
+        const answer = {};
+        answer.success = false;
+        let navResponse = { key: 0, index: 0, chunk: 0 };
+        let navSuccess = false;
+
+        try {
+            if (currentNavNumItems >= 0) {
+                // finite navlist (numItems is known and not -1)
+                if (navKey >= currentNavNumItems) {
+                    this.log.debug(`navKey ${navKey} exceeds number of items ${currentNavNumItems}`);
+                    navKey = currentNavNumItems - 1;
+                    //throw new Error(`navKey ${navKey} exceeds number of items ${currentNavNumItems}`);
+                }
+
+                const chunkIndex = Math.max(0, Math.floor(navKey / currentNavListChunk));
+                const currentChunkIndex = Math.max(
+                    0,
+                    Math.floor(currentNavNumItemsMax / currentNavListChunk - 1) +
+                        (currentNavNumItemsMax % currentNavListChunk > 0 ? 1 : 0),
+                );
+                if (chunkIndex !== currentChunkIndex) {
+                    this.log.debug(`Loading chunk ${chunkIndex} (currentChunkIndex: ${currentChunkIndex})`);
+                    const chunkStartKey = chunkIndex === 0 ? -1 : chunkIndex * currentNavListChunk - 1;
+                    await this.updateNavList(chunkStartKey);
+                }
+                const navIndex = navKey % currentNavListChunk;
+
+                navResponse.key = navKey;
+                navResponse.index = navIndex;
+                navResponse.chunk = chunkIndex;
+                navSuccess = true;
+            } else {
+                // infinite navlist (numItems is -1), use chunk-tracking and load new
+                // chunk if neccessary
+                const startChunkIndex = currentNavChunkIndex;
+                let navFound = false;
+                let navIndex = 0;
+
+                // make sure there is a valid chunks list
+                if (currentNavChunks.length === 0) {
+                    this.log.debug('currentNavChunks is empty, loading first chunk');
+                    await this.updateNavList(-1);
+                } else if (currentNavChunks[0] !== '-1') {
+                    this.log.debug(`currentNavChunks does not start with chunk 0, loading chunk 0 with startKey -1`);
+                    await this.updateNavList(-1);
+                }
+
+                do {
+                    // until complete cycle through all chunks finished or navFound
+                    let i = 0;
+                    for (const item of currentNavList) {
+                        // for the current chunk until navFound
+
+                        this.log.debug(
+                            `Checking navKey ${navKey} against item ${Number(item.$.key)} in currently loaded chunk ${currentNavChunkIndex}. Start chunk: ${startChunkIndex} currentNavChunks: ${JSON.stringify(currentNavChunks)}`,
+                        );
+
+                        if (navKey == Number(item.$.key)) {
+                            this.log.debug(
+                                `Found matching navigation item for navKey "${navKey}" in chunk ${currentNavChunkIndex} with chunk startKey ${currentNavChunks[currentNavChunkIndex]}.`,
+                            );
+                            navIndex = i;
+                            navFound = true;
+                            break;
+                        }
+                        i += 1;
+                    }
+
+                    if (!navFound) {
+                        this.log.debug(`Load further chunks until last chunk reached for navKey ${navKey}`);
+                        if (currentNavChunkIndex < currentNavChunks.length - 1) {
+                            // Es gibt einen aufgezeichneten nächsten Chunk
+                            const nextChunkId = currentNavChunks[currentNavChunkIndex + 1];
+                            const startParam = nextChunkId === '-1' ? -1 : Number(nextChunkId);
+                            this.log.debug(
+                                `Infinite list: loading next recorded chunk, chunkIndex ${currentNavChunkIndex} -> ${currentNavChunkIndex + 1}`,
+                            );
+                            await this.updateNavList(startParam);
+                        } else {
+                            // Kein aufgezeichneter nächster Chunk - check ob aktueller Chunk vollständig ist
+                            if (currentNavList.length < currentNavListChunk) {
+                                // Aktueller Chunk ist der letzte Chunk (unvollständig) -> WRAP zur ersten Seite
+                                this.log.debug(
+                                    `Infinite list: last chunk detected (${currentNavList.length} < ${currentNavListChunk}), wrapping to first chunk`,
+                                );
+                                await this.updateNavList(-1);
+                            } else {
+                                // Lade nächsten Chunk dynamisch anhand des letzten Keys
+                                const lastKey = currentNavList[currentNavList.length - 1].$.key;
+                                this.log.debug(
+                                    `Infinite list: loading next chunk from last key ${lastKey}, currentChunks before=${JSON.stringify(currentNavChunks)}`,
+                                );
+                                await this.updateNavList(Number(lastKey));
+                                this.log.debug(
+                                    `Infinite list: after updateNavList, currentChunks=${JSON.stringify(currentNavChunks)}, currentNavChunkIndex=${currentNavChunkIndex}`,
+                                );
+                            }
+                        }
+                        this.log.debug(
+                            `Did not find navKey ${navKey} in currently loaded chunk ${currentNavChunkIndex}. currentNavChunks: ${JSON.stringify(currentNavChunks)}`,
+                        );
+                        navFound = false;
+                    } else {
+                        navFound = true;
+                        break;
+                    }
+                } while (!navFound && currentNavChunkIndex != startChunkIndex); // cycle through all chunks until found or arrived at start chunk
+
+                if (!navFound) {
+                    this.log.debug(
+                        `Did not find navKey ${navKey} in any loaded chunks. currentNavChunks: ${JSON.stringify(currentNavChunks)}`,
+                    );
+                    throw new Error(`navKey ${navKey} not found in any chunks`);
+                }
+                navResponse.key = navKey;
+                navResponse.index = navIndex;
+                navResponse.chunk = currentNavChunkIndex;
+                navSuccess = true;
+            }
+        } catch (err) {
+            this.log.debug(`${err} in loadChunkForNavKey`);
+            navResponse.key = 0;
+            navResponse.index = 0;
+            navResponse.chunk = 0;
+            navSuccess = false;
+        }
+        this.log.debug(
+            `navResponse: chunk: ${JSON.stringify(navResponse.chunk)} key: ${JSON.stringify(navResponse.key)} index: ${JSON.stringify(navResponse.index)} navSuccess: ${navSuccess}`,
+        );
+        answer.result = navResponse;
+        answer.success = navSuccess;
+        return answer;
+    }
 
     /**
      * Update navigation list after mode switch or after selecting a directory
@@ -1294,7 +1530,6 @@ class FrontierSilicon extends utils.Adapter {
     async updateNavList(startItem) {
         try {
             this.log.debug(`updateNavList called with startItem=${startItem}`);
-            let currentNavItems = {};
 
             let answer = await this.waitForStatusReady();
             if (!answer.success) {
@@ -1347,16 +1582,26 @@ class FrontierSilicon extends utils.Adapter {
                 await this.waitForStatusReady();
                 response = await this.callAPI('netRemote.nav.list', '', startIndex, currentNavListChunk);
                 if (!response.success) {
-                    this.log.debug('updateNavList: nav.list call failed');
-                    return;
+                    let answer = await this.waitForStatusReady();
+                    if (answer.success) {
+                        // retry one more time if nav.list call was not successful but status is ready (e.g. for large lists)
+                        let result = await this.callAPI('netRemote.nav.list', '', startIndex, currentNavListChunk);
+                        if (!result.success) {
+                            throw new Error('Finally failed to update navigation list after second try');
+                        }
+                        response = result;
+                    } else {
+                        this.log.debug(
+                            `updateNavList: nav.list call failed, response=${JSON.stringify(response)}, answer=${JSON.stringify(answer)}`,
+                        );
+                        throw new Error('Failed to update navigation list after waiting for ready status');
+                    }
                 }
 
                 currentNavList = response.result.item || [];
-                this.log.debug(
-                    `Current Nav List ${JSON.stringify(response.result.item)} length: ${currentNavList.length}`,
-                );
-                // Reset index into the chunk
-                currentNavIndex = 0;
+                //this.log.debug(
+                //    `Current Nav List ${JSON.stringify(response.result.item)} length: ${currentNavList.length}`,
+                //);
 
                 if (currentNavNumItems < 0) {
                     // --- Infinite list handling (currentNavNumItems == -1) ---
@@ -1459,32 +1704,13 @@ class FrontierSilicon extends utils.Adapter {
                 }
 
                 // Build states mapping
+                currentNavItems = [];
                 currentNavList.forEach((item, i) => {
                     const nameField = item.field.find(f => f.$.name === 'name');
                     currentNavItems[i] = nameField ? nameField.c8_array[0].trim() : '';
                 });
-
-                // extract first item meta data for state updates
-                if (currentNavList.length > 0) {
-                    currentNavKey = Number(currentNavList[currentNavIndex].$.key);
-                    currentNavList[currentNavIndex].field.forEach(f => {
-                        switch (f.$.name) {
-                            case 'name':
-                                currentNavName = f.c8_array[0];
-                                break;
-                            case 'type':
-                                currentNavType = Number(f.u8[0]);
-                                break;
-                            case 'subtype':
-                                currentNavSubtype = Number(f.u8[0]);
-                                break;
-                            default:
-                                break;
-                        }
-                    });
-                }
                 // Build currentNavList JSON mapping
-                this.log.debug(`Next States: ${JSON.stringify(currentNavList)}`);
+                //this.log.debug(`Next States: ${JSON.stringify(currentNavList)}`);
 
                 if (currentNavList.length > 0) {
                     let key = '';
@@ -1548,7 +1774,7 @@ class FrontierSilicon extends utils.Adapter {
                         });
                     });
                 }
-                this.log.debug(`Next List: ${JSON.stringify(currentNavListJson)}`);
+                //this.log.debug(`Next List: ${JSON.stringify(currentNavListJson)}`);
 
                 this.log.debug(
                     `updateNavList: Loaded from startIndex=${startIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}, firstKey=${currentNavKey}`,
@@ -1568,24 +1794,15 @@ class FrontierSilicon extends utils.Adapter {
                 currentNavListJson = [];
             }
 
-            await this.setState('modes.currentNavIndex', { val: currentNavIndex, ack: true });
-            await this.setState('modes.currentNavKey', { val: currentNavKey, ack: true });
-            await this.setState('modes.currentNavName', { val: currentNavName, ack: true });
-            await this.setState('modes.currentNavList', { val: JSON.stringify(currentNavListJson), ack: true });
+            // update navigation object states
 
-            // Aktualisiere das Objekt mit den neuen Werten
-            const obj = await this.getObjectAsync('modes.currentNavIndex');
-            if (obj && obj.native) {
-                obj.native.currentNavNumItems.value = currentNavNumItems;
-                obj.native.currentNavNumItemsMax.value = currentNavNumItemsMax;
-                obj.native.currentNavKey.value = currentNavKey;
-                obj.native.currentNavName.value = currentNavName;
-                obj.native.currentNavIndex.value = currentNavIndex;
-                obj.common.states = currentNavItems;
-                obj.native.currentNavType.value = currentNavType;
-                obj.native.currentNavSubtype.value = currentNavSubtype;
-                await this.setObject('modes.currentNavIndex', obj);
+            // Reset index into the chunk. Is always 0 for a newly loaded chunk
+            currentNavIndex = 0;
+            if (currentNavList.length > 0) {
+                currentNavKey = Number(currentNavList[currentNavIndex].$.key);
             }
+            await this.updateNavStates();
+            await this.setState('modes.currentNavList', { val: JSON.stringify(currentNavListJson), ack: true });
         } catch (err) {
             this.log.debug(`${err} in updateNavList`);
         }
@@ -1671,6 +1888,57 @@ class FrontierSilicon extends utils.Adapter {
                     // Navigation is disabled, enable it
                     await this.callAPI('netRemote.nav.state', '1');
                 }
+            }
+        } catch (err) {
+            this.log.debug(`${err} in enableNavIfNeccessary`);
+        }
+    }
+
+    /**
+     * Update navigation object states
+     */
+
+    async updateNavStates() {
+        try {
+            // extract first item meta data for state updates
+            currentNavList[currentNavIndex].field.forEach(f => {
+                switch (f.$.name) {
+                    case 'name':
+                        currentNavName = f.c8_array[0];
+                        break;
+                    case 'type':
+                        currentNavType = Number(f.u8[0]);
+                        break;
+                    case 'subtype':
+                        currentNavSubtype = Number(f.u8[0]);
+                        break;
+                    default:
+                        break;
+                }
+            });
+            // Update current NavIndex/NavKey/NavName/NavType/NavSubtype only after successfully reading
+            //  the next item to avoid losing the current position on read errors
+            await this.setState('modes.currentNavIndex', {
+                val: currentNavIndex,
+                ack: true,
+            });
+            await this.setState('modes.currentNavKey', {
+                val: currentNavKey,
+                ack: true,
+            });
+            await this.setState(`modes.currentNavName`, { val: currentNavName, ack: true });
+
+            const obj = await this.getObjectAsync('modes.currentNavIndex');
+            if (obj && obj.native) {
+                obj.native.currentNavNumItems.value = currentNavNumItems;
+                obj.native.currentNavNumItemsMax.value = currentNavNumItemsMax;
+                obj.native.currentNavKey.value = currentNavKey;
+                obj.native.currentNavName.value = currentNavName;
+                obj.native.currentNavIndex.value = currentNavIndex;
+                obj.common.states = currentNavItems;
+                obj.native.currentNavType.value = currentNavType;
+                obj.native.currentNavSubtype.value = currentNavSubtype;
+                await this.setObject('modes.currentNavIndex', obj);
             }
         } catch (err) {
             this.log.debug(`${err} in enableNavIfNeccessary`);
@@ -1874,7 +2142,7 @@ class FrontierSilicon extends utils.Adapter {
                 },
                 native: {},
             });
-            let response = await this.callAPI('netRemote.sys.result');
+            let response = await this.callAPI('netRemote.sys.power');
             //this.log.debug(JSON.stringify(response));
             if (response.success) {
                 this.log.debug(`Power: ${response.result.value[0].u8[0] == 1}`);
@@ -2015,10 +2283,10 @@ class FrontierSilicon extends utils.Adapter {
                 native: {},
             });
 
-            await this.setObjectNotExistsAsync(`modes.navigationBack`, {
+            await this.setObjectNotExistsAsync(`modes.navigationHome`, {
                 type: 'state',
                 common: {
-                    name: 'Navigation back',
+                    name: 'Navigation home',
                     type: 'boolean',
                     role: 'button',
                     def: false,
@@ -3055,75 +3323,140 @@ class FrontierSilicon extends utils.Adapter {
         try {
             if (!name) {
                 this.log.debug('UpdateNavigation: Name is undefined or empty.');
-                throw new Error('UpdateNavigation: Name is undefined or empty.');
-                //return;
+                throw new Error('Name is undefined or empty');
             }
             if (currentNavNumItems === -1 || currentNavList.length === 0) {
                 this.log.debug('UpdateNavigation: Navigation list is empty or infinite.');
-                throw new Error('UpdateNavigation: Navigation list is empty or infinite.');
-                //return;
+                throw new Error('Navigation list is empty or infinite');
             }
+            if (!((currentNavType === 1) /*playable item*/) || !(currentNavSubtype === 3) /*track*/) {
+                this.log.debug('UpdateNavigation: Navigation list update only if playable item and track subtype.');
+                throw new Error('Navigation list update only if playable item and track subtype');
+            }
+
             let navFound = false;
             let navKey = 0;
 
-            //            do {
-            //Search name in current navigation list chunk
             for (const item of currentNavList) {
                 let navName = '';
                 const nameField = item.field.find(f => f.$.name === 'name');
                 navName = nameField.c8_array[0].trim();
-                /*
-                item.field.forEach(f => {
-                    switch (f.$.name) {
-                        case 'name':
-                            navName = f.c8_array[0];
-                            break;
-                        default:
-                            break;
-                    }
-                });
-                */
                 if (navName === name) {
                     this.log.debug(
                         `UpdateNavigation: Found matching navigation item "${name}" with key ${item.$.key}.`,
                     );
                     navFound = true;
                     navKey = Number(item.$.key);
-                    // check if playable item is within current chunk, if not fetch next or previous chunk accordingly and continue searching
                     break;
                 }
             }
-            /*
-            if (!navFound) {
-                if (currentNavIndex >= currentNavList.length - 1 && !navFound) {
+
+            // check if playable item is within current chunk, if not fetch next or previous chunk accordingly and continue searching
+            if (navFound) {
+                // update navigation state to current item key to reflect current position in navigation list
+                await this.setState('modes.currentNavKey', { val: navKey, ack: true });
+                if (navKey > currentNavKey) {
                     this.log.debug(
-                        `Upper end of current navigation list chunk reached without finding a match, fetching next chunk...`,
+                        `UpdateNavigation: Received navKey ${navKey} > currentNavKey ${currentNavKey} --> NavigateUp.`,
+                    );
+                    let i = navKey - currentNavKey;
+                    do {
+                        this.log.debug(
+                            `UpdateNavigation: Navigating up to key ${currentNavKey + i} - i is ${i}...`,
+                            // navigateUp
+                        );
+                        await this.navigateUp();
+                        i--;
+                    } while (i > 0);
+                } else if (navKey < currentNavKey) {
+                    this.log.debug(
+                        `UpdateNavigation: Received navKey ${navKey} < currentNavKey ${currentNavKey} --> NavigateDown.`,
+                    );
+                    let i = currentNavKey - navKey;
+                    do {
+                        this.log.debug(
+                            `UpdateNavigation: Navigating down to key ${currentNavKey - i} - i is ${i}...`,
+                            // navigateDown
+                        );
+                        await this.navigateDown();
+                        i--;
+                    } while (i > 0);
+                }
+            } else {
+                // name not found in current chunk, check if end of chunk is reached and fetch next or previous chunk accordingly and continue searching
+                if (currentNavIndex >= currentNavList.length - 1) {
+                    this.log.debug(
+                        `UpdateNavigation: Upper end of current navigation list chunk reached without finding a match, fetching next chunk...`,
                         // navigateUp
                     );
-                    await this.setState('modes.navigationUp', { val: true, ack: true });
-                } else if (currentNavIndex <= 0 && !navFound) {
+                    await this.navigateUp();
+                } else if (currentNavIndex <= 0) {
                     this.log.debug(
-                        `Lower end of current navigation list chunk reached without finding a match, fetching previous chunk...`,
+                        `UpdateNavigation: Lower end of current navigation list chunk reached without finding a match, fetching previous chunk...`,
                         // navigateDown
                     );
-                    await this.setState('modes.navigationDown', { val: true, ack: true });
+                    await this.navigateDown();
+                }
+                //Search name in current navigation list chunk
+                for (const item of currentNavList) {
+                    let navName = '';
+                    const nameField = item.field.find(f => f.$.name === 'name');
+                    navName = nameField.c8_array[0].trim();
+                    if (navName === name) {
+                        this.log.debug(
+                            `UpdateNavigation: Found matching navigation item "${name}" with key ${item.$.key} after chunk update.`,
+                        );
+                        navFound = true;
+                        navKey = Number(item.$.key);
+                        break;
+                    }
+                }
+                if (!navFound) {
+                    /*
+                    // the next if conditions are needed in case the current navigation list chunk was
+                    // updated to a chunk containing the target item but the target item is not within
+                    // the current chunk and therefore needs to be fetched by navigating up or down accordingly
+                    // THIS Code may be not needed if the FSAPI always returns the chunk containing the
+                    // target item when navigating up or down but needs to be in place to cover cases
+                    // where this is not the case (e.g. due to read errors or unexpected behavior of the
+                    // FSAPI)
+                    if (navKey > currentNavKey) {
+                        this.log.debug(
+                            `UpdateNavigation: Received navKey ${navKey} > currentNavKey ${currentNavKey} --> NavigateUp.`,
+                        );
+                        let i = navKey - currentNavKey;
+                        do {
+                            this.log.debug(
+                                `UpdateNavigation: Navigating up to key ${currentNavKey + i} - i is ${i}...`,
+                                // navigateUp
+                            );
+                            await this.navigateUp();
+                            i--;
+                        } while (i > 0);
+                    } else if (navKey < currentNavKey) {
+                        this.log.debug(
+                            `UpdateNavigation: Received navKey ${navKey} < currentNavKey ${currentNavKey} --> NavigateDown.`,
+                        );
+                        //await this.navigateDown();
+
+                        let i = currentNavKey - navKey;
+                        do {
+                            this.log.debug(
+                                `UpdateNavigation: Navigating down to key ${currentNavKey - i} - i is ${i}...`,
+                                // navigateDown
+                            );
+                            await this.navigateDown();
+                            i--;
+                        } while (i > 0);
+                    }
+                } else {
+                    */
+                    this.log.debug(`UpdateNavigation: No matching navigation item found for name "${name}".`);
+                    throw new Error(`No matching navigation item found for name "${name}"`);
                 }
             }
-            //            } while (!navFound); // continue searching if list is chunked and end of current chunk is reached
-            */
-            if (navFound) {
-                await this.setState('modes.currentNavIndex', {
-                    val: navKey >= currentNavListChunk ? navKey % currentNavListChunk : navKey,
-                    ack: true,
-                });
-                await this.setState('modes.currentNavKey', { val: navKey, ack: true });
-                await this.setState(`modes.currentNavName`, { val: name, ack: true });
-            } else {
-                //this.log.debug(`UpdateNavigation: No matching navigation item found for name "${name}".`);
-                throw new Error(`UpdateNavigation: No matching navigation item found for name "${name}".`);
-            }
         } catch (error) {
-            this.log.debug(`${String(error)}`);
+            this.log.debug(`${String(error)} in UpdateNavigation`);
         }
     }
 
