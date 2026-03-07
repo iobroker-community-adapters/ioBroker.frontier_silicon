@@ -98,8 +98,7 @@ Documentation of the states and objects as well as general FSAPI documentation c
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 0.5.1 (2026-03-07)
 
 - (copilot) Adapter requires admin >= 7.7.22 now
 - (pdbjjens) **Fixed**: update release-script (#348)
