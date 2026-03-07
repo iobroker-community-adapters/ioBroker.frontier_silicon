@@ -103,6 +103,7 @@ Documentation of the states and objects as well as general FSAPI documentation c
 
 - (copilot) Adapter requires admin >= 7.7.22 now
 - (pdbjjens) **Fixed**: update release-script (#348)
+- (mcm1957) Dependencies have been updated
 
 ### 0.5.1-alpha.0 (2025-10-20)
 
