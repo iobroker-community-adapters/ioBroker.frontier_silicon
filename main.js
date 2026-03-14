@@ -26,6 +26,7 @@ let lastSleepClear = 0;
 let polling = false;
 let sessionRetryCnt = SESSION_RETRYS;
 // Navigation List related variables
+let navLogging = false; // set to true to enable detailed logging for navigation list handling (can be very verbose)
 let currentNavNumItems = 0;
 let currentNavNumItemsMax = 0;
 let currentNavIndex = 0;
@@ -294,7 +295,7 @@ class FrontierSilicon extends utils.Adapter {
                     }
                     // frontier_silicon.1.modes.4.presets.2.recall
                     if (zustand.length == 7 && zustand[4] === 'presets' && zustand[6] === 'recall') {
-                        await this.callAPI('netRemote.nav.state', '1');
+                        await this.enableNavIfNeccessary();
                         // this.log.debug(`modes.${zustand[3]}.presets.${zustand[5]} activated`);
                         await adapter
                             .callAPI('netRemote.nav.action.selectPreset', zustand[5])
@@ -338,7 +339,7 @@ class FrontierSilicon extends utils.Adapter {
                         });
                     } else if (zustand[3] === 'selectPreset' && state.val !== null) {
                         this.log.debug(`Selecting Preset ${state.val}`);
-                        await this.callAPI('netRemote.nav.state', '1');
+                        await this.enableNavIfNeccessary();
                         await adapter
                             .callAPI('netRemote.nav.action.selectPreset', state.val.toString())
                             .then(async function (response) {
@@ -522,25 +523,30 @@ class FrontierSilicon extends utils.Adapter {
                             let nextKey = 0;
                             let tmpnr = currentNavIndex;
                             this.log.debug(
-                                `In navigationUp: Current Index: ${tmpnr} current key: ${currentNavList[tmpnr] ? currentNavList[tmpnr].$.key : 'n/a'} currentNavNumItemsMax: ${currentNavNumItemsMax} currentNavNumItems: ${currentNavNumItems}`,
+                                `navigationUp: NavigationUp activated, trying to navigate up from current index ${currentNavIndex}`,
                             );
+                            if (navLogging) {
+                                this.log.debug(
+                                    `In navigationUp: Current Index: ${tmpnr} current key: ${currentNavList[tmpnr] ? currentNavList[tmpnr].$.key : 'n/a'} currentNavNumItemsMax: ${currentNavNumItemsMax} currentNavNumItems: ${currentNavNumItems}`,
+                                );
+                            }
 
                             tmpnr += 1;
                             if (tmpnr >= currentNavList.length) {
                                 const chunkUp = await this.navigateChunkUp();
                                 if (chunkUp && chunkUp.success) {
                                     this.log.debug(
-                                        `Loaded more items for navigationUp - new currentNavIndex: ${chunkUp.result.index} new currentNavKey: ${chunkUp.result.key}`,
+                                        `Loaded more items for navigationUp - new chunk: ${JSON.stringify(chunkUp.result)}`,
                                     );
                                     nextKey = chunkUp.result.key;
                                     tmpnr = chunkUp.result.index;
                                 } else {
-                                    this.log.debug(
-                                        `Failed to load more items for navigationUp: ${chunkUp ? chunkUp.error : 'unknown error'}`,
-                                    );
-                                    throw new Error(
-                                        `Failed to load more items for navigationUp: ${chunkUp ? chunkUp.error : 'unknown error'}`,
-                                    );
+                                    if (navLogging) {
+                                        this.log.debug(
+                                            `Failed to load more items for navigationUp: ${JSON.stringify(chunkUp)}`,
+                                        );
+                                    }
+                                    throw new Error(`Failed to load more items for navigationUp.`);
                                 }
                             } else {
                                 nextKey = Number(currentNavList[tmpnr].$.key);
@@ -556,10 +562,15 @@ class FrontierSilicon extends utils.Adapter {
                                 currentNavIndex = tmpnr;
                                 currentNavKey = nextKey;
                                 await this.updateNavStates();
-                            } else {
                                 this.log.debug(
-                                    `navigationUp: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                                    `navigationUp: Successfully navigated up to index ${currentNavIndex}, key ${currentNavKey}`,
                                 );
+                            } else {
+                                if (navLogging) {
+                                    this.log.debug(
+                                        `navigationUp: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                                    );
+                                }
                                 throw new Error('Invalid navigation state or no items available');
                             }
                             await this.setState(`modes.navigationUp`, { val: true, ack: true });
@@ -571,8 +582,13 @@ class FrontierSilicon extends utils.Adapter {
                             let nextKey = 0;
                             let tmpnr = currentNavIndex;
                             this.log.debug(
-                                `In navigationDown: Current Index: ${tmpnr} current key: ${currentNavList[tmpnr] ? currentNavList[tmpnr].$.key : 'n/a'} currentNavNumItemsMax: ${currentNavNumItemsMax} currentNavNumItems: ${currentNavNumItems}`,
+                                `navigationDown: NavigationDown activated, trying to navigate down from current index ${currentNavIndex}`,
                             );
+                            if (navLogging) {
+                                this.log.debug(
+                                    `In navigationDown: Current Index: ${tmpnr} current key: ${currentNavList[tmpnr] ? currentNavList[tmpnr].$.key : 'n/a'} currentNavNumItemsMax: ${currentNavNumItemsMax} currentNavNumItems: ${currentNavNumItems}`,
+                                );
+                            }
 
                             tmpnr -= 1;
 
@@ -581,15 +597,17 @@ class FrontierSilicon extends utils.Adapter {
                                 const chunkDown = await this.navigateChunkDown();
                                 if (chunkDown && chunkDown.success) {
                                     this.log.debug(
-                                        `Successfully loaded more items for navigateDown: new currentNavIndex: ${chunkDown.result.index} new currentNavKey: ${chunkDown.result.key}`,
+                                        `Successfully loaded more items for navigationDown: new chunk: ${JSON.stringify(chunkDown.result)}`,
                                     );
                                     nextKey = chunkDown.result.key;
                                     tmpnr = chunkDown.result.index;
                                 } else {
-                                    this.log.debug(
-                                        `Failed to load more items for navigateDown: ${chunkDown ? chunkDown.error : 'unknown error'}`,
-                                    );
-                                    throw new Error('Failed to load more items for navigateDown');
+                                    if (navLogging) {
+                                        this.log.debug(
+                                            `Failed to load more items for navigationDown: ${JSON.stringify(chunkDown)}`,
+                                        );
+                                    }
+                                    throw new Error(`Failed to load more items for navigationDown.`);
                                 }
                             } else {
                                 nextKey = Number(currentNavList[tmpnr].$.key);
@@ -605,10 +623,15 @@ class FrontierSilicon extends utils.Adapter {
                                 currentNavIndex = tmpnr;
                                 currentNavKey = nextKey;
                                 await this.updateNavStates();
-                            } else {
-                                this.log.error(
-                                    `navigateDown: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                                this.log.debug(
+                                    `navigationDown: Successfully navigated down to index ${currentNavIndex}, key ${currentNavKey}`,
                                 );
+                            } else {
+                                if (navLogging) {
+                                    this.log.debug(
+                                        `navigationDown: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                                    );
+                                }
                                 throw new Error('Invalid navigation state or no items available');
                             }
                             await this.setState(`modes.navigationDown`, { val: true, ack: true });
@@ -617,20 +640,32 @@ class FrontierSilicon extends utils.Adapter {
                         }
                     } else if (zustand[3] === 'navigationSelect') {
                         try {
+                            this.log.debug(
+                                `navigationSelect activated, trying to navigate to navKey ${currentNavKey}...`,
+                            );
                             let response = await this.navigateSelect();
                             if (response && response.success) {
-                                await adapter.setState(`modes.navigationSelect`, { val: true, ack: true });
+                                this.log.debug(`navigationSelect: Navigated to navKey ${currentNavKey} successfully.`);
                             } else {
-                                this.log.debug(
-                                    `navigationSelect failed: ${response.result.status[0].toString()} - ${response.result.value[0].c8_array[0]}`,
-                                );
+                                if (navLogging) {
+                                    this.log.debug(
+                                        `navigationSelect failed: ${response.result.status[0].toString()} - ${response.result.value[0].c8_array[0]}`,
+                                    );
+                                }
                                 throw new Error('Navigation select failed');
                             }
+                            await adapter.setState(`modes.navigationSelect`, { val: true, ack: true });
                         } catch (err) {
                             this.log.debug(`${err} in navigationSelect`);
                         }
                     } else if (zustand[3] === 'navigationBack') {
                         try {
+                            this.log.debug(`navigationBack activated, trying to navigate back...`);
+                            if (navLogging) {
+                                this.log.debug(
+                                    `navigationBack: CurrentNavKey ${currentNavKey}, currentNavIndex ${currentNavIndex}, currentNavList.length ${currentNavList.length}, currentNavNumItems ${currentNavNumItems}, currentNavPath ${JSON.stringify(currentNavPath)}`,
+                                );
+                            }
                             if (currentNavNumItems >= 0) {
                                 // only go back if navigation is possible (numItems is known and not -1)
                                 await this.enableNavIfNeccessary();
@@ -638,33 +673,42 @@ class FrontierSilicon extends utils.Adapter {
                                 if (response.success) {
                                     await this.updateNavList(); // load first chunk and update navigation states after navigating back
                                     await this.updateNavStates();
+                                    this.log.debug(
+                                        `navigationBack: Navigated back successfully, updated nav list and states.`,
+                                    );
                                 } else {
                                     throw new Error(
-                                        `${response.result.status[0].toString()}: navigation top level reached`,
+                                        `navigation top level reached: ${response.result.status[0].toString()}`,
                                     );
                                 }
 
                                 let previousKey = currentNavPath.pop();
                                 // find previousKey in currentNavList to update currentNavIndex, if not found set index to 0
                                 //let currentNavIndex = 0;
+                                this.log.debug(
+                                    `navigationBack: Find previousKey ${previousKey} in currentNavList to update currentNavIndex.`,
+                                );
                                 if (previousKey && previousKey !== undefined && previousKey !== null) {
-                                    this.log.debug(
-                                        `navigationBack: Received navKey ${previousKey} > currentNavKey ${currentNavKey}.`,
-                                    );
+                                    if (navLogging) {
+                                        this.log.debug(
+                                            `navigationBack: Received navKey ${previousKey} > currentNavKey ${currentNavKey}.`,
+                                        );
+                                    }
                                     const response = await this.loadChunkForNavKey(previousKey);
                                     if (response && response.success) {
                                         this.log.debug(
-                                            `Chunk ${response.result.chunk} loaded for navKey ${response.result.key}, currentNavIndex: ${response.result.index}`,
+                                            `navigationBack: Chunk ${response.result.chunk} loaded successfully for navKey ${response.result.key}, currentNavIndex: ${response.result.index}`,
                                         );
-
                                         currentNavIndex = response.result.index;
                                         currentNavKey = response.result.key;
 
                                         await this.updateNavStates();
                                     } else {
-                                        this.log.debug(
-                                            `navigationBack: Invalid navigation state. previousKey=${previousKey}, currentNavKey=${currentNavKey}, currentNavIndex=${currentNavIndex} currentNavList.length=${currentNavList.length}`,
-                                        );
+                                        if (navLogging) {
+                                            this.log.debug(
+                                                `navigationBack: Invalid navigation state. previousKey=${previousKey}, currentNavKey=${currentNavKey}, currentNavIndex=${currentNavIndex} currentNavList.length=${currentNavList.length}`,
+                                            );
+                                        }
                                         throw new Error('Invalid navigation state or no items available');
                                     }
                                 }
@@ -676,14 +720,20 @@ class FrontierSilicon extends utils.Adapter {
                     } else if (zustand[3] === 'navigationHome') {
                         try {
                             // reset nav.state, as we are navigating to the top level then clear saved navigation path and load first chunk of NavList
+                            this.log.debug(
+                                `navigationHome: Navigating to home, resetting navigation state and path...`,
+                            );
                             let response = await this.callAPI('netRemote.nav.state', '0');
                             if (response.success) {
                                 currentNavPath = [];
                                 await this.updateNavList();
                                 await this.updateNavStates();
+                                this.log.debug(
+                                    `navigationHome: Navigated to home, currentNavKey: ${currentNavKey}, currentNavIndex: ${currentNavIndex}`,
+                                );
                             } else {
                                 throw new Error(
-                                    `${response.result.status[0].toString()}: navigation top level reached`,
+                                    `navigation top level reached: ${response.result.status[0].toString()}`,
                                 );
                             }
                             await adapter.setState(`modes.navigationHome`, { val: true, ack: true });
@@ -699,17 +749,23 @@ class FrontierSilicon extends utils.Adapter {
                                 searchTerm = state.val.toString().trim();
                                 let response = await this.callAPI('netRemote.nav.searchTerm', searchTerm);
                                 if (response.success) {
-                                    this.log.debug(`Sent Search Term: ${searchTerm}`);
+                                    if (navLogging) {
+                                        this.log.debug(`navigationSearch: Sent Search Term: ${searchTerm}`);
+                                    }
                                 } else {
-                                    this.log.debug(`Setting searchTerm ${searchTerm} failed`);
+                                    if (navLogging) {
+                                        this.log.debug(`navigationSearch: Setting searchTerm ${searchTerm} failed`);
+                                    }
                                     throw new Error(`Setting searchTerm ${searchTerm} failed`);
                                 }
                             }
                             let response = await this.callAPI('netRemote.nav.searchTerm');
                             if (response.success && response.result.value[0].c8_array[0].trim() == searchTerm) {
-                                this.log.debug(`SearchTerm verified`);
+                                this.log.debug(`navigationSearch: SearchTerm verified`);
                             } else {
-                                this.log.debug(`Verification of searchTerm ${searchTerm} failed`);
+                                if (navLogging) {
+                                    this.log.debug(`navigationSearch: Verification of searchTerm ${searchTerm} failed`);
+                                }
                                 throw new Error(`Verification of searchTerm ${searchTerm} failed`);
                             }
                             await adapter.setState(`modes.navigationSearch`, { ack: true });
@@ -721,12 +777,15 @@ class FrontierSilicon extends utils.Adapter {
                             let nextKey = 0;
                             let tmpnr = 0;
                             this.log.debug(`CurrentNavKey set to ${state.val}, updating navigation if necessary...`);
+
                             // load chunk for navKey if not in currentNavList and update currentNavIndex
                             const response = await this.loadChunkForNavKey(Number(state.val));
                             if (response && response.success) {
-                                this.log.debug(
-                                    `Chunk ${response.result.chunk} loaded for navKey ${response.result.key}, currentNavIndex: ${response.result.index}`,
-                                );
+                                if (navLogging) {
+                                    this.log.debug(
+                                        `Chunk ${response.result.chunk} loaded for navKey ${response.result.key}, currentNavIndex: ${response.result.index}`,
+                                    );
+                                }
 
                                 nextKey = response.result.key;
                                 tmpnr = response.result.index;
@@ -744,26 +803,32 @@ class FrontierSilicon extends utils.Adapter {
 
                                     await this.updateNavStates();
                                 } else {
-                                    this.log.debug(
-                                        `set currentNavKey: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
-                                    );
+                                    if (navLogging) {
+                                        this.log.debug(
+                                            `set currentNavKey: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                                        );
+                                    }
                                     throw new Error('Invalid navigation state or no items available');
                                 }
-                                this.log.debug(
-                                    `set currentNavKey successfull : currentNavKey=${currentNavKey}, currentNavIndex=${currentNavIndex}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
-                                );
+                                if (navLogging) {
+                                    this.log.debug(
+                                        `set currentNavKey successfull : currentNavKey=${currentNavKey}, currentNavIndex=${currentNavIndex}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                                    );
+                                }
 
                                 const result = await this.navigateSelect();
                                 if (result && result.success) {
                                     this.log.debug(`navigateSelect successful for navKey ${state.val}`);
                                 } else {
-                                    this.log.debug(`navigateSelect failed for navKey ${state.val}`);
+                                    if (navLogging) {
+                                        this.log.debug(`navigateSelect failed for navKey ${state.val}`);
+                                    }
                                     throw new Error(`navigateSelect failed for navKey ${state.val}`);
                                 }
                             } else {
-                                await this.setState(`modes.currentNavKey`, { val: state.val, ack: true });
                                 throw new Error(`navKey ${state.val} not found or invalid`);
                             }
+                            await this.setState(`modes.currentNavKey`, { val: state.val, ack: true });
                         } catch (err) {
                             this.log.debug(`${err} while setting currentNavKey`);
                         }
@@ -1243,7 +1308,6 @@ class FrontierSilicon extends utils.Adapter {
                     navSuccess = false;
                 }
             }
-            //}
         } catch (err) {
             this.log.debug(`${err} in navigateSelect`);
             navSuccess = false;
@@ -1272,17 +1336,25 @@ class FrontierSilicon extends utils.Adapter {
                 if (ceilingItemsMax < ceilingItems) {
                     // there are more items to load
                     const nextChunkStart = ceilingItemsMax * currentNavListChunk - 1;
-                    this.log.debug(
-                        `Loading more items for navigateChunkUp from index ${nextChunkStart} ceilingItemsMax=${ceilingItemsMax} ceilingItems=${ceilingItems}`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `navigateChunkUp: Loading more items from index ${nextChunkStart} ceilingItemsMax=${ceilingItemsMax} ceilingItems=${ceilingItems}`,
+                        );
+                    }
                     await this.updateNavList(nextChunkStart);
                 } else if (ceilingItemsMax == ceilingItems) {
                     if (ceilingItems > 1) {
                         // last chunk reached, back to start
-                        this.log.debug('Last chunk reached, reloading list from beginning');
+                        if (navLogging) {
+                            this.log.debug('navigateChunkUp: Last chunk reached, reloading list from beginning');
+                        }
                         await this.updateNavList();
                     } else {
-                        //this.log.debug('Single chunk list, ceilingItems: ${ceilingItems}, no need to reload');
+                        if (navLogging) {
+                            this.log.debug(
+                                `navigateChunkUp: Single chunk list, ceilingItems: ${ceilingItems}, no need to reload`,
+                            );
+                        }
                         throw new Error('Single chunk list, no chunks to load');
                     }
                 }
@@ -1292,28 +1364,36 @@ class FrontierSilicon extends utils.Adapter {
                     // there is a recorded next chunk
                     const nextChunkId = currentNavChunks[currentNavChunkIndex + 1];
                     const startParam = nextChunkId === '-1' ? -1 : Number(nextChunkId);
-                    this.log.debug(
-                        `Infinite list: loading next recorded chunk, chunkIndex ${currentNavChunkIndex} -> ${currentNavChunkIndex + 1}`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `navigateChunkUp: Infinite list: loading next recorded chunk, chunkIndex ${currentNavChunkIndex} -> ${currentNavChunkIndex + 1}`,
+                        );
+                    }
                     await this.updateNavList(startParam);
                 } else {
                     // no recorded next chunk - check if current chunk is complete
                     if (currentNavList.length < currentNavListChunk) {
                         // current chunk is the last chunk (incomplete) -> WRAP to first page
-                        this.log.debug(
-                            `Infinite list: last chunk detected (${currentNavList.length} < ${currentNavListChunk}), wrapping to first chunk`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `navigateChunkUp: Infinite list: last chunk detected (${currentNavList.length} < ${currentNavListChunk}), wrapping to first chunk`,
+                            );
+                        }
                         await this.updateNavList(-1);
                     } else {
                         // load next chunk dynamically based on the last key
                         const lastKey = currentNavList[currentNavList.length - 1].$.key;
-                        this.log.debug(
-                            `Infinite list: loading next chunk from last key ${lastKey}, currentChunks before=${JSON.stringify(currentNavChunks)}`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `navigateChunkUp: Infinite list: loading next chunk from last key ${lastKey}, currentChunks before=${JSON.stringify(currentNavChunks)}`,
+                            );
+                        }
                         await this.updateNavList(Number(lastKey));
-                        this.log.debug(
-                            `Infinite list: after updateNavList, currentChunks=${JSON.stringify(currentNavChunks)}, currentNavChunkIndex=${currentNavChunkIndex}`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `navigateChunkUp: Infinite list: after updateNavList, currentChunks=${JSON.stringify(currentNavChunks)}, currentNavChunkIndex=${currentNavChunkIndex}`,
+                            );
+                        }
                     }
                 }
             }
@@ -1352,19 +1432,28 @@ class FrontierSilicon extends utils.Adapter {
 
                 if (ceilingItemsMax > 1) {
                     const prevChunkStart = ceilingItemsMax > 2 ? (ceilingItemsMax - 2) * currentNavListChunk - 1 : -1;
-                    this.log.debug(
-                        `Loading previous items for navigateDown from index ${prevChunkStart} floorItems=${floorItems} ceilingItems=${ceilingItems}`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `navigateChunkDown: Loading previous items for navigateDown from index ${prevChunkStart} floorItems=${floorItems} ceilingItems=${ceilingItems}`,
+                        );
+                    }
                     await this.updateNavList(prevChunkStart);
                 } else if (ceilingItemsMax == 1) {
                     if (ceilingItems > 1) {
                         const endChunkStart = Math.max(0, floorItems * currentNavListChunk - 1);
-                        this.log.debug(
-                            `At beginning of first list, ceilingItems: ${ceilingItems} loading from end at index ${endChunkStart}`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `navigateChunkDown: At beginning of first list, ceilingItems: ${ceilingItems} loading from end at index ${endChunkStart}`,
+                            );
+                        }
                         await this.updateNavList(endChunkStart);
                     } else {
-                        this.log.debug(`Single chunk list, ceilingItems: ${ceilingItems} jumping to last item`);
+                        if (navLogging) {
+                            this.log.debug(
+                                `navigateChunkDown: Single chunk list, ceilingItems: ${ceilingItems} jumping to last item`,
+                            );
+                        }
+                        //await this.updateNavList(currentNavNumItems - currentNavListChunk - 1);
                     }
                 }
             } else if (currentNavNumItems === -1) {
@@ -1374,32 +1463,50 @@ class FrontierSilicon extends utils.Adapter {
                     const prevIndex = currentNavChunkIndex - 1;
                     const prevChunkId = currentNavChunks[prevIndex];
                     const startParam = prevChunkId === '-1' ? -1 : Number(prevChunkId);
-                    this.log.debug(
-                        `Infinite list: loading previous chunk (from chunkIndex ${currentNavChunkIndex} -> ${prevIndex})`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `navigateChunkDown: Infinite list: loading previous chunk (from chunkIndex ${currentNavChunkIndex} -> ${prevIndex})`,
+                        );
+                    }
                     await this.updateNavList(startParam);
-                    this.log.debug(
-                        `After loading previous chunk: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}, currentNavChunks=${JSON.stringify(currentNavChunks)}`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `navigateChunkDown: After loading previous chunk: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}, currentNavChunks=${JSON.stringify(currentNavChunks)}`,
+                        );
+                    }
                 } else {
                     // we are at the beginning (chunk 0), go to LAST chunk by wrapping to the end (wrap-around)
-                    this.log.debug('Infinite list: at beginning of first chunk, wrapping to last chunk');
+                    if (navLogging) {
+                        this.log.debug(
+                            'navigateChunkDown: Infinite list: at beginning of first chunk, wrapping to last chunk',
+                        );
+                    }
                     if (currentNavChunks.length > 0) {
                         const lastIdx = currentNavChunks.length - 1;
                         const lastChunkId = currentNavChunks[lastIdx];
                         const startParam = lastChunkId === '-1' ? -1 : Number(lastChunkId);
-                        this.log.debug(`Loading last chunk for wrap-around (chunkIndex ${lastIdx})`);
+                        if (navLogging) {
+                            this.log.debug(
+                                `navigateChunkDown: Loading last chunk for wrap-around (chunkIndex ${lastIdx})`,
+                            );
+                        }
                         await this.updateNavList(startParam);
-                        this.log.debug(
-                            `After wrapping to last chunk: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `navigateChunkDown: After wrapping to last chunk: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
+                            );
+                        }
                     } else {
                         // no chunks there, load chunk 0
-                        this.log.debug('Infinite list: no chunks recorded, loading from start');
+                        if (navLogging) {
+                            this.log.debug('navigateChunkDown: Infinite list: no chunks recorded, loading from start');
+                        }
                         await this.updateNavList(-1);
-                        this.log.debug(
-                            `After loading from start: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `navigateChunkDown: After loading from start: chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
+                            );
+                        }
                     }
                 }
             }
@@ -1451,9 +1558,11 @@ class FrontierSilicon extends utils.Adapter {
                 for (const item of currentNavList) {
                     // for the current chunk until navFound
                     if (navKey == Number(item.$.key)) {
-                        this.log.debug(
-                            `Found matching navigation item for navKey "${navKey}" in chunk ${nextChunkIndex} with chunk startKey ${currentNavChunks[nextChunkIndex]}.`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `loadChunkForNavKey: Found matching navigation item for navKey "${navKey}" in chunk ${nextChunkIndex} with chunk startKey ${currentNavChunks[nextChunkIndex]}.`,
+                            );
+                        }
                         navIndex = i;
                         keyFound = true;
                         break;
@@ -1462,31 +1571,45 @@ class FrontierSilicon extends utils.Adapter {
                 }
 
                 if (!keyFound) {
-                    this.log.debug(
-                        `navKey ${navKey} not found in currently loaded chunk ${nextChunkIndex}. Load further chunks until last chunk reached. (currentNavChunkIndex: ${nextChunkIndex}, startChunkIndex: ${startChunkIndex}) currentNavChunks: ${JSON.stringify(currentNavChunks)}`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `loadChunkForNavKey: navKey ${navKey} not found in currently loaded chunk ${nextChunkIndex}. Load further chunks until last chunk reached. (currentNavChunkIndex: ${nextChunkIndex}, startChunkIndex: ${startChunkIndex}) currentNavChunks: ${JSON.stringify(currentNavChunks)}`,
+                        );
+                    }
                     if (targetChunkIndex > startChunkIndex || (currentNavNumItems == -1 && targetChunkIndex == -1)) {
                         const chunkUp = await this.navigateChunkUp();
                         if (!chunkUp.success) {
-                            this.log.debug(`Failed to load next chunk: ${JSON.stringify(chunkUp)}`);
+                            if (navLogging) {
+                                this.log.debug(
+                                    `loadChunkForNavKey: Failed to load next chunk: ${JSON.stringify(chunkUp)}`,
+                                );
+                            }
                             keyFound = false;
                             break; // break the loop if we cannot load the next chunk
                         } else {
-                            this.log.debug(
-                                `Successfully loaded next chunk for navigation search: ${JSON.stringify(chunkUp)}`,
-                            );
+                            if (navLogging) {
+                                this.log.debug(
+                                    `loadChunkForNavKey: Successfully loaded next chunk for navigation search: ${JSON.stringify(chunkUp)}`,
+                                );
+                            }
                             nextChunkIndex = chunkUp.result.chunk; // chunkIndex of the newly loaded chunk after navigateChunkUp
                         }
                     } else if (targetChunkIndex < startChunkIndex && targetChunkIndex != -1) {
                         const chunkDown = await this.navigateChunkDown();
                         if (!chunkDown.success) {
-                            this.log.debug(`Failed to load previous chunk: ${JSON.stringify(chunkDown)}`);
+                            if (navLogging) {
+                                this.log.debug(
+                                    `loadChunkForNavKey: Failed to load previous chunk: ${JSON.stringify(chunkDown)}`,
+                                );
+                            }
                             keyFound = false;
                             break; // break the loop if we cannot load the previous chunk
                         } else {
-                            this.log.debug(
-                                `Successfully loaded previous chunk for navigation search: ${JSON.stringify(chunkDown)}`,
-                            );
+                            if (navLogging) {
+                                this.log.debug(
+                                    `loadChunkForNavKey: Successfully loaded previous chunk for navigation search: ${JSON.stringify(chunkDown)}`,
+                                );
+                            }
                             nextChunkIndex = chunkDown.result.chunk; // chunkIndex of the newly loaded chunk after navigateChunkDown
                         }
                     } else {
@@ -1497,7 +1620,9 @@ class FrontierSilicon extends utils.Adapter {
             } while (!keyFound && !(nextChunkIndex == startChunkIndex)); // cycle through all chunks until found or arrived at start chunk
 
             if (!keyFound) {
-                this.log.debug(`Did not find navKey ${navKey} in any loaded chunks.`);
+                if (navLogging) {
+                    this.log.debug(`loadChunkForNavKey: Did not find navKey ${navKey} in any loaded chunks.`);
+                }
                 throw new Error(`navKey ${navKey} not found in any chunks`);
             }
             navResponse.key = navKey;
@@ -1511,9 +1636,11 @@ class FrontierSilicon extends utils.Adapter {
             navResponse.chunk = startChunkIndex;
             navSuccess = false;
         }
-        this.log.debug(
-            `loadChunkForNavKey: chunk: ${JSON.stringify(navResponse.chunk)} key: ${JSON.stringify(navResponse.key)} index: ${JSON.stringify(navResponse.index)} navSuccess: ${navSuccess}`,
-        );
+        if (navLogging) {
+            this.log.debug(
+                `loadChunkForNavKey: chunk: ${JSON.stringify(navResponse.chunk)} key: ${JSON.stringify(navResponse.key)} index: ${JSON.stringify(navResponse.index)} navSuccess: ${navSuccess}`,
+            );
+        }
         answer.result = navResponse;
         answer.success = navSuccess;
         return answer;
@@ -1553,9 +1680,11 @@ class FrontierSilicon extends utils.Adapter {
                     const nameField = item.field.find(f => f.$.name === 'name');
                     navName = nameField.c8_array[0].trim();
                     if (navName === name.trim()) {
-                        this.log.debug(
-                            `updateNavigation: Found matching navigation item "${name}" with key ${item.$.key}.`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `loadChunkForNavName: Found matching navigation item "${name}" with key ${item.$.key}.`,
+                            );
+                        }
                         nameFound = true;
                         navIndex = i;
                         navKey = Number(item.$.key);
@@ -1565,31 +1694,45 @@ class FrontierSilicon extends utils.Adapter {
                 }
 
                 if (!nameFound) {
-                    this.log.debug(
-                        `navName ${name} not found in currently loaded chunk ${nextChunkIndex}. Load further chunks until last chunk reached. (currentNavChunkIndex: ${nextChunkIndex}, startChunkIndex: ${startChunkIndex}) currentNavChunks: ${JSON.stringify(currentNavChunks)}`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `loadChunkForNavName: navName ${name} not found in currently loaded chunk ${nextChunkIndex}. Load further chunks until last chunk reached. (currentNavChunkIndex: ${nextChunkIndex}, startChunkIndex: ${startChunkIndex}) currentNavChunks: ${JSON.stringify(currentNavChunks)}`,
+                        );
+                    }
                     if (targetChunkIndex > startChunkIndex || (currentNavNumItems == -1 && targetChunkIndex == -1)) {
                         const chunkUp = await this.navigateChunkUp();
                         if (!chunkUp.success) {
-                            this.log.debug(`Failed to load next chunk: ${JSON.stringify(chunkUp)}`);
+                            if (navLogging) {
+                                this.log.debug(
+                                    `loadChunkForNavName: Failed to load next chunk: ${JSON.stringify(chunkUp)}`,
+                                );
+                            }
                             nameFound = false;
                             break; // break the loop if we cannot load the next chunk
                         } else {
-                            this.log.debug(
-                                `Successfully loaded next chunk for navigation search: ${JSON.stringify(chunkUp)}`,
-                            );
+                            if (navLogging) {
+                                this.log.debug(
+                                    `loadChunkForNavName: Successfully loaded next chunk for navigation search: ${JSON.stringify(chunkUp)}`,
+                                );
+                            }
                             nextChunkIndex = chunkUp.result.chunk; // chunkIndex of the newly loaded chunk after navigateChunkUp
                         }
                     } else if (targetChunkIndex < startChunkIndex && targetChunkIndex != -1) {
                         const chunkDown = await this.navigateChunkDown();
                         if (!chunkDown.success) {
-                            this.log.debug(`Failed to load previous chunk: ${JSON.stringify(chunkDown)}`);
+                            if (navLogging) {
+                                this.log.debug(
+                                    `loadChunkForNavName: Failed to load previous chunk: ${JSON.stringify(chunkDown)}`,
+                                );
+                            }
                             nameFound = false;
                             break; // break the loop if we cannot load the previous chunk
                         } else {
-                            this.log.debug(
-                                `Successfully loaded previous chunk for navigation search: ${JSON.stringify(chunkDown)}`,
-                            );
+                            if (navLogging) {
+                                this.log.debug(
+                                    `loadChunkForNavName: Successfully loaded previous chunk for navigation search: ${JSON.stringify(chunkDown)}`,
+                                );
+                            }
                             nextChunkIndex = chunkDown.result.chunk; // chunkIndex of the newly loaded chunk after navigateChunkDown
                         }
                     } else {
@@ -1600,7 +1743,9 @@ class FrontierSilicon extends utils.Adapter {
             } while (!nameFound && !(nextChunkIndex == startChunkIndex)); // cycle through all chunks until found or arrived at start chunk
 
             if (!nameFound) {
-                this.log.debug(`Did not find navName ${name} in any loaded chunks.`);
+                if (navLogging) {
+                    this.log.debug(`loadChunkForNavName: Did not find navName ${name} in any loaded chunks.`);
+                }
                 throw new Error(`navName ${name} not found in any chunks`);
             }
             navResponse.key = navKey;
@@ -1614,9 +1759,11 @@ class FrontierSilicon extends utils.Adapter {
             navResponse.chunk = startChunkIndex;
             navSuccess = false;
         }
-        this.log.debug(
-            `navResponse: chunk: ${JSON.stringify(navResponse.chunk)} key: ${JSON.stringify(navResponse.key)} index: ${JSON.stringify(navResponse.index)} navSuccess: ${navSuccess}`,
-        );
+        if (navLogging) {
+            this.log.debug(
+                `loadChunkForNavName: navResponse: chunk: ${JSON.stringify(navResponse.chunk)} key: ${JSON.stringify(navResponse.key)} index: ${JSON.stringify(navResponse.index)} navSuccess: ${navSuccess}`,
+            );
+        }
         answer.result = navResponse;
         answer.success = navSuccess;
         return answer;
@@ -1634,18 +1781,22 @@ class FrontierSilicon extends utils.Adapter {
             if (!answer.success) {
                 let navStatus = Number(answer.result.value[0].u8[0]);
                 if (!(navStatus == 3 || navStatus == 0)) {
-                    this.log.debug(
-                        `updateNavList: Navigation not ready, cannot update nav list ${JSON.stringify(answer)}`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `updateNavList: Navigation not ready, cannot update nav list ${JSON.stringify(answer)}`,
+                        );
+                    }
                     throw new Error('Navigation not ready, cannot update nav list');
                 }
             }
             let response = await this.callAPI('netRemote.nav.numitems');
             if (response && response.success) {
                 currentNavNumItems = Number(response.result.value[0].s32[0]);
-                this.log.debug(
-                    `Number of items in current mode: ${JSON.stringify(response.result.value[0].s32[0])} currentNavNumItems: ${currentNavNumItems}`,
-                );
+                if (navLogging) {
+                    this.log.debug(
+                        `updateNavList: Number of items in current mode: ${JSON.stringify(response.result.value[0].s32[0])} currentNavNumItems: ${currentNavNumItems}`,
+                    );
+                }
             }
             if (currentNavNumItems !== 0) {
                 // Parameterauswertung:
@@ -1660,24 +1811,33 @@ class FrontierSilicon extends utils.Adapter {
                     startIndex = -1; // Load chunk 0 for full reset
                     currentNavChunks = [];
                     currentNavChunkIndex = 0;
-                    this.log.debug('updateNavList: full reset of chunk tracking (loading chunk 0)');
+                    if (navLogging) {
+                        this.log.debug('updateNavList: full reset of chunk tracking (loading chunk 0)');
+                    }
                 } else if (explicitLoadZero) {
                     startIndex = -1; // load first page but keep currentNavChunks
-                    this.log.debug('updateNavList: explicit load of chunk 0 (no reset)');
+                    if (navLogging) {
+                        this.log.debug('updateNavList: explicit load of chunk 0 (no reset)');
+                    }
                 } else if (startItem !== undefined && startItem !== null && startItem >= 0) {
                     startIndex = startItem;
-                    this.log.debug(`updateNavList: explicit startIndex=${startIndex}`);
+                    if (navLogging) {
+                        this.log.debug(`updateNavList: explicit startIndex=${startIndex}`);
+                    }
                 } else {
                     // fallback: treat as full reset
                     startIndex = -1;
                     currentNavChunks = [];
                     currentNavChunkIndex = 0;
-                    this.log.debug('updateNavList: fallback full reset');
+                    if (navLogging) {
+                        this.log.debug('updateNavList: fallback full reset');
+                    }
                 }
-
-                this.log.debug(
-                    `updateNavList: Loading from startIndex=${startIndex} (explicitLoadZero=${explicitLoadZero}, fullReset=${fullReset})`,
-                );
+                if (navLogging) {
+                    this.log.debug(
+                        `updateNavList: Loading from startIndex=${startIndex} (explicitLoadZero=${explicitLoadZero}, fullReset=${fullReset})`,
+                    );
+                }
                 await this.waitForStatusReady();
                 response = await this.callAPI('netRemote.nav.list', '', startIndex, currentNavListChunk);
                 if (!response.success) {
@@ -1690,9 +1850,11 @@ class FrontierSilicon extends utils.Adapter {
                         }
                         response = result;
                     } else {
-                        this.log.debug(
-                            `updateNavList: nav.list call failed, response=${JSON.stringify(response)}, answer=${JSON.stringify(answer)}`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `updateNavList: nav.list call failed, response=${JSON.stringify(response)}, answer=${JSON.stringify(answer)}`,
+                            );
+                        }
                         throw new Error('Failed to update navigation list after waiting for ready status');
                     }
                 }
@@ -1717,22 +1879,22 @@ class FrontierSilicon extends utils.Adapter {
                     if (fullReset || currentNavChunks.length === 0) {
                         currentNavChunks = [chunkIdentifier];
                         currentNavChunkIndex = 0;
-                        this.log.debug(`Infinite: initialized with chunk 0, identifier=${chunkIdentifier}`);
+                        //this.log.debug(`Infinite: initialized with chunk 0, identifier=${chunkIdentifier}`);
                     } else if (explicitLoadZero) {
                         // chunk 0 must be on position 0 and is identified as "-1"
                         let foundIdx = currentNavChunks.findIndex(k => k === '-1' || k === chunkIdentifier);
                         if (foundIdx === -1) {
                             currentNavChunks.unshift('-1');
                             currentNavChunkIndex = 0;
-                            this.log.debug(`Infinite: inserted chunk 0 with identifier "-1"`);
+                            //this.log.debug(`Infinite: inserted chunk 0 with identifier "-1"`);
                         } else if (foundIdx !== 0) {
                             currentNavChunks.splice(foundIdx, 1);
                             currentNavChunks.unshift('-1');
                             currentNavChunkIndex = 0;
-                            this.log.debug(`Infinite: moved chunk 0 to position 0`);
+                            //this.log.debug(`Infinite: moved chunk 0 to position 0`);
                         } else {
                             currentNavChunkIndex = 0;
-                            this.log.debug(`Infinite: chunk 0 already at position 0`);
+                            //this.log.debug(`Infinite: chunk 0 already at position 0`);
                         }
                     } else {
                         // a new chunk is added (not chunk 0)
@@ -1742,38 +1904,50 @@ class FrontierSilicon extends utils.Adapter {
                             // new chunk: simply add to the end (keep load sequence)
                             currentNavChunks.push(chunkIdentifier);
                             idx = currentNavChunks.length - 1;
-                            this.log.debug(
-                                `Infinite: appended new chunk with identifier ${chunkIdentifier} at pos ${idx}, chunks now: ${JSON.stringify(currentNavChunks)}`,
-                            );
+                            if (navLogging) {
+                                this.log.debug(
+                                    `updateNavList: Infinite - appended new chunk with identifier ${chunkIdentifier} at pos ${idx}, chunks now: ${JSON.stringify(currentNavChunks)}`,
+                                );
+                            }
                         } else {
-                            this.log.debug(
-                                `Infinite: found existing chunk with identifier ${chunkIdentifier} at pos ${idx}`,
-                            );
+                            if (navLogging) {
+                                this.log.debug(
+                                    `updateNavList: Infinite - found existing chunk with identifier ${chunkIdentifier} at pos ${idx}`,
+                                );
+                            }
                         }
                         currentNavChunkIndex = idx;
-                        this.log.debug(
-                            `Infinite: set currentNavChunkIndex to ${idx} for identifier ${chunkIdentifier}`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `updateNavList: Infinite - set currentNavChunkIndex to ${idx} for identifier ${chunkIdentifier}`,
+                            );
+                        }
                     }
 
                     // compute currentNavNumItemsMax
                     if (currentNavList.length < currentNavListChunk) {
                         // current chunk is incomplete (last chunk)
                         currentNavNumItemsMax = currentNavChunkIndex * currentNavListChunk + currentNavList.length;
-                        this.log.debug(
-                            `Infinite: last incomplete chunk - chunkIndex=${currentNavChunkIndex}, itemsInThisChunk=${currentNavList.length}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
-                        );
+                        if (navLogging) {
+                            this.log.debug(
+                                `updateNavList: Infinite - last incomplete chunk - chunkIndex=${currentNavChunkIndex}, itemsInThisChunk=${currentNavList.length}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
+                            );
+                        }
                     } else {
                         // current chunk is incomplete
                         // IMPORTANT: currentNavNumItemsMax = Items up to the CURRENT chunk + current chunk items
                         currentNavNumItemsMax = (currentNavChunkIndex + 1) * currentNavListChunk;
+                        if (navLogging) {
+                            this.log.debug(
+                                `updateNavList: Infinite - complete chunk - chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
+                            );
+                        }
+                    }
+                    if (navLogging) {
                         this.log.debug(
-                            `Infinite: complete chunk - chunkIndex=${currentNavChunkIndex}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
+                            `updateNavList: Infinite - chunkIndex=${currentNavChunkIndex}, chunks=${JSON.stringify(currentNavChunks)}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
                         );
                     }
-                    this.log.debug(
-                        `Infinite list: chunkIndex=${currentNavChunkIndex}, chunks=${JSON.stringify(currentNavChunks)}, currentNavNumItemsMax=${currentNavNumItemsMax}`,
-                    );
                 } else {
                     // --- Finite list handling ---
                     if (startIndex >= 0) {
@@ -1788,9 +1962,11 @@ class FrontierSilicon extends utils.Adapter {
                         currentNavNumItemsMax = Math.min(currentNavListChunk, currentNavNumItems);
                         currentChunkIndex = 0;
                     }
-                    this.log.debug(
-                        `Finite list: Loaded from startIndex=${startIndex}, currentNavNumItems=${currentNavNumItems}, currentNavNumItemsMax=${currentNavNumItemsMax}, currentChunkIndex=${currentChunkIndex}`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `updateNavList: Finite list - Loaded from startIndex=${startIndex}, currentNavNumItems=${currentNavNumItems}, currentNavNumItemsMax=${currentNavNumItemsMax}, currentChunkIndex=${currentChunkIndex}`,
+                        );
+                    }
                 }
 
                 // Build states mapping
@@ -1863,7 +2039,9 @@ class FrontierSilicon extends utils.Adapter {
                     });
                 }
             } else {
-                this.log.debug(`updateNavList: currentNavNumItems == 0, resetting navigation states`);
+                if (navLogging) {
+                    this.log.debug(`updateNavList: currentNavNumItems == 0, resetting navigation states`);
+                }
                 // Reset relevant states for empty list
                 currentNavNumItems = 0;
                 currentNavNumItemsMax = 0;
@@ -1906,48 +2084,72 @@ class FrontierSilicon extends utils.Adapter {
             do {
                 const response = await this.callAPI('netRemote.nav.status');
                 if (response && response.success) {
-                    this.log.debug(
-                        `Navigation status: ${JSON.stringify(response)} result: ${response.result.value[0].u8[0]}`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `waitForStatusReady: Navigation status - ${JSON.stringify(response)} result: ${response.result.value[0].u8[0]}`,
+                        );
+                    }
                     navStatus = Number(response.result.value[0].u8[0]);
                     navResponse = response.result;
                     navSuccess = false;
                 }
                 if (response.result.status[0].toString() == 'FS_NODE_BLOCKED') {
-                    this.log.debug(
-                        `Navigation status call failed with FS_NODE_BLOCKED, try to enable navigation state`,
-                    );
+                    if (navLogging) {
+                        this.log.debug(
+                            `waitForStatusReady: Navigation status call failed with FS_NODE_BLOCKED, try to enable navigation state`,
+                        );
+                    }
                     await this.enableNavIfNeccessary();
                 } else if (navStatus == 1 || navStatus == 4) {
                     // READY or READY_ROOT
-                    this.log.debug(`Navigation is ready: navStatus = ${navStatus}`);
+                    if (navLogging) {
+                        this.log.debug(`waitForStatusReady: Navigation is ready: navStatus = ${navStatus}`);
+                    }
                     break;
                 } else if (navStatus == 0) {
                     // WAITING
-                    this.log.debug(`Navigation is busy, waiting... navStatus = ${navStatus}`);
+                    if (navLogging) {
+                        this.log.debug(`waitForStatusReady: Navigation is busy, waiting... navStatus = ${navStatus}`);
+                    }
                     await this.sleep(500);
                 } else if (navStatus == 3) {
                     // FATAL_ERR
-                    this.log.debug(`Navigation status call fatal error: navStatus = ${navStatus}`);
+                    if (navLogging) {
+                        this.log.debug(
+                            `waitForStatusReady: Navigation status call fatal error: navStatus = ${navStatus}`,
+                        );
+                    }
                     throw new Error(`Navigation status call fatal error: navStatus = ${navStatus}`);
                 } else if (navStatus == 2) {
                     // FAIL
-                    this.log.debug(`Navigation status call failed: navStatus = ${navStatus}`);
+                    if (navLogging) {
+                        this.log.debug(`waitForStatusReady: Navigation status call failed: navStatus = ${navStatus}`);
+                    }
                     await this.sleep(500);
                 }
             } while (loopCounter-- > 0);
             if (loopCounter <= 0) {
-                this.log.debug(`Loop counter exceeded with counter at ${loopCounter}`);
+                if (navLogging) {
+                    this.log.debug(`waitForStatusReady: Loop counter exceeded with counter at ${loopCounter}`);
+                }
                 throw new Error(`Loop counter exceeded with counter at ${loopCounter}`);
             } else {
-                this.log.debug(`Navigation is ready after ${loopcounterMax - loopCounter} retries`);
+                if (navLogging) {
+                    this.log.debug(
+                        `waitForStatusReady: Navigation is ready after ${loopcounterMax - loopCounter} retries`,
+                    );
+                }
                 navSuccess = true;
             }
         } catch (err) {
             this.log.debug(`${err} in waitForStatusReady`);
             navSuccess = false;
         }
-        this.log.debug(`navResponse: ${JSON.stringify(navResponse)} - navSuccess: ${navSuccess}`);
+        if (navLogging) {
+            this.log.debug(
+                `waitForStatusReady: navResponse - ${JSON.stringify(navResponse)} - navSuccess: ${navSuccess}`,
+            );
+        }
         answer.result = navResponse;
         answer.success = navSuccess;
         return answer;
@@ -1961,9 +2163,11 @@ class FrontierSilicon extends utils.Adapter {
         try {
             const response = await this.callAPI('netRemote.nav.state');
             if (response.success) {
-                this.log.debug(
-                    `Navigation state: ${JSON.stringify(response)} result: ${response.result.value[0].u8[0]}`,
-                );
+                if (navLogging) {
+                    this.log.debug(
+                        `enableNavIfNeccessary: Navigation state - ${JSON.stringify(response)} result: ${response.result.value[0].u8[0]}`,
+                    );
+                }
                 if (response.result.value[0].u8[0] == 0) {
                     // Navigation is disabled, enable it
                     await this.callAPI('netRemote.nav.state', '1');
@@ -2358,6 +2562,19 @@ class FrontierSilicon extends utils.Adapter {
                 type: 'state',
                 common: {
                     name: 'Navigation select',
+                    type: 'boolean',
+                    role: 'button',
+                    def: false,
+                    read: false,
+                    write: true,
+                },
+                native: {},
+            });
+
+            await this.setObjectNotExistsAsync(`modes.navigationBack`, {
+                type: 'state',
+                common: {
+                    name: 'Navigation back',
                     type: 'boolean',
                     role: 'button',
                     def: false,
