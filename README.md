@@ -21,36 +21,18 @@ NOTE: This adapter has been transferred to iobroker-community-adapters for maint
 
 RELEASE NOTES:
 
-Version 0.5.x includes a Breaking Change:
+Version 0.6.x includes a Breaking Change and a new navigation function:
 
-- node>=20, js-controller>=7.0.7 and admin>=7.6.17 required  
+- node>=20, js-controller>=7.0.7 and admin>=7.7.22 required  
 Upgrade your ioBroker to at least this software level, if you want to use this adapter
 
-Version 0.4.x includes a Breaking Change:
+- New Navigation functions  
+ New button objects (up/down/select/back/home/search) allow to explore and navigate the file structure of the FSAPI device and to select playable items.  
+ New state objects identify the current location within the file structure and list the items like directories or files and their properties at that location.  
+ Together, buttons and item lists allow integration of the FSAPI adapter in media player widgets of ioBroker visualizations like VIS2 or iqontrol.
 
-- The type of "frontier_silicon.X.media.state" changed from "number" to "string" and readonly  
-If you update this adapter from a previous version instead of a new installation, you may possibly find warnings in the ioBroker log like:  
-`State value to set for "frontier_silicon.0.media.state" has to be type "number" but received type "string"`  
-To prevent this from happening, the most simple solution is to stop the adapter in the instances tab of ioBroker, completely delete the object tree in the objects tab and then restart the adapter. This of course is only neccessary once after the update and is not required if you do a clean new installation.
-
-Version 0.3.x includes some Breaking Changes:
-
-- node>=18, js-contoller>=5 and admin>=6 required  
-Upgrade your ioBroker to at least this software level, if you want to use this adapter
-
-- PIN encryption and validity check of all parameters in config UI  
-If you update this adapter from a previous version instead of a new installation, the adapter will not start, even if your PIN in your config is correct and has not been changed. To fix this, simply enter the same previous PIN once more in the config UI and store and close the config UI to restart the adapter. This of course is only neccessary once after the first start after the update.
-
-- The type of "frontier_silicon.X.modes.selectPreset" changed from "string" to "number"  
-If you update this adapter from a previous version instead of a new installation, you may possibly find warnings in the ioBroker log like:  
-`State value to set for "frontier_silicon.0.modes.selectPreset" has to be type "string" but received type "number"`  
-To prevent this from happening, the most simple solution is to stop the adapter in the instances tab of ioBroker, completely delete the object tree in the objects tab and then restart the adapter. This of course is only neccessary once after the update and is not required if you do a clean new installation.
-
-- Synchronization of power, volume and mute states with the UNDOK App  
-Synchronization with the UNDOK App here means that power, volume and mute settings changed by the UNDOK App will now also be updated in the states of this adapter.  Due to the limitations of the FSAPI protocol the state synchronization of the UNDOK App with the adapter still is unreliable and will not be instantaneous but only happen when e.g. a preset or a mode is changed using the UNDOK App.
-
-- Cyclic connection retry instead of disabling the adapter  
-Previously the adapter was terminated after 10 session connection attempts when the device was unreachable due to long-lasting network problems like router restarts, LAN or WiFi outage. Now the adapter will retry after every session refresh interval until the device is reachable again. If you want to avoid log entries regarding these retries you have to stop the adapter manually. If your network problem is fixed while the retry period is still ongoing, simply restart the adapter.
+- New preset functions  
+ New Button objects allow setting the currently playing radio station as a new preset. Also there are buttons to navigate the presets of the current mode up or down. These buttons can also be used to integrate preset navigation into a visualization media player widget.
 
 ## Features
 
@@ -63,6 +45,7 @@ Previously the adapter was terminated after 10 session connection attempts when 
 - Volume control
 - Notifications
 - Auto discovery
+- Navigation
 
 ### Planned features
 
@@ -98,6 +81,11 @@ Documentation of the states and objects as well as general FSAPI documentation c
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+
+- (pdbjjens) **New**: navigation functions (up/down/select/back/home/search) for all modes (#342)
+- (pdbjjens) **New**: functions to set presets and to navigate presets up/down
+
 ### 0.5.1 (2026-03-07)
 
 - (copilot) Adapter requires admin >= 7.7.22 now
@@ -146,7 +134,6 @@ The authors are in no way endorsed by or affiliated with Frontier Smart Technolo
 ## License
 
 MIT License
-
 
 Copyright (c) 2026 iobroker-community-adapters <iobroker-community-adapters@gmx.de>  
 Copyright (c) 2025 halloamt <iobroker@halloserv.de> & IoBroker-Community
