@@ -127,6 +127,7 @@ class FrontierSilicon extends utils.Adapter {
         this.subscribeStates('device.dayLightSavingTime');
         this.subscribeStates('modes.*.switchTo');
         this.subscribeStates('modes.*.presets.*.recall');
+        this.subscribeStates('modes.*.presets.*.set');
         this.subscribeStates('modes.selected');
         this.subscribeStates('modes.selectPreset');
         this.subscribeStates('modes.presetUp');
@@ -312,10 +313,68 @@ class FrontierSilicon extends utils.Adapter {
                                 }
                             });
                         //adapter.getSelectedPreset();
-                        // eslint-disable-next-line brace-style
-                    }
-                    // frontier_silicon.1.modes.selected
-                    else if (zustand[3] === 'selected' && state.val !== null) {
+                    } else if (zustand.length == 7 && zustand[4] === 'presets' && zustand[6] === 'set') {
+                        // frontier_silicon.1.modes.4.presets.2.set
+                        try {
+                            await this.enableNavIfNeccessary();
+                            this.log.debug(`modes.${zustand[3]}.presets.${zustand[5]} activated`);
+                            if (navLogging) {
+                                this.log.debug(`Attempting to set preset ${zustand[5]} for mode ${zustand[3]}.'}`);
+                            }
+
+                            const currMode = await adapter.getStateAsync('modes.selected');
+                            if (
+                                currMode !== null &&
+                                currMode !== undefined &&
+                                currMode.val !== null &&
+                                currMode.val.toString() === zustand[3]
+                            ) {
+                                await adapter
+                                    .callAPI('netRemote.play.addPreset', zustand[5])
+                                    .then(async function (response) {
+                                        if (response.success) {
+                                            if (navLogging) {
+                                                adapter.log.debug(
+                                                    `Preset ${zustand[5]} set successfully for mode ${zustand[3]}. Response: ${JSON.stringify(response)}`,
+                                                );
+                                            }
+                                            const currName = await adapter.getStateAsync('media.name');
+                                            if (currName !== null && currName !== undefined && currName.val !== null) {
+                                                if (navLogging) {
+                                                    adapter.log.debug(
+                                                        `Current media name is ${JSON.stringify(currName.val)}, trying to set as preset name for preset ${zustand[5]}...`,
+                                                    );
+                                                }
+                                                await adapter.setState(
+                                                    `modes.${zustand[3]}.presets.${zustand[5]}.name`,
+                                                    {
+                                                        val: currName.val.toString().trim(),
+                                                        ack: true,
+                                                    },
+                                                );
+                                            } else {
+                                                if (navLogging) {
+                                                    adapter.log.debug(
+                                                        `Current media name is not available, cannot set preset name for preset ${zustand[5]}.`,
+                                                    );
+                                                }
+                                            }
+                                            await adapter.setState(`modes.${zustand[3]}.presets.${zustand[5]}.set`, {
+                                                val: true,
+                                                ack: true,
+                                            });
+                                        }
+                                    });
+                            } else {
+                                throw new Error(
+                                    `Cannot set preset ${zustand[5]} because current mode ${currMode ? currMode.val : 'n/a'} does not match expected mode ${zustand[3]}`,
+                                );
+                            }
+                        } catch (err) {
+                            this.log.warn(`${err} in set preset.`);
+                        }
+                    } else if (zustand[3] === 'selected' && state.val !== null) {
+                        // frontier_silicon.1.modes.selected
                         this.log.debug('Modus umschalten');
                         await adapter.callAPI('netRemote.sys.mode', state.val.toString()).then(async response => {
                             if (response.success) {
@@ -2386,6 +2445,20 @@ class FrontierSilicon extends utils.Adapter {
                 native: {},
             });
             promo.push(pro);
+            pro = this.setObjectNotExistsAsync(`modes.${mode}.presets.${key}.set`, {
+                type: 'state',
+                common: {
+                    name: 'Set preset',
+                    type: 'boolean',
+                    role: 'button',
+                    def: false,
+                    read: false,
+                    write: true,
+                },
+                native: {},
+            });
+            promo.push(pro);
+
             //presets.set(name.toString().trim(), key);
         });
         // Wait for all object creation processes
