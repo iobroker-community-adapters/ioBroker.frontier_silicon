@@ -26,7 +26,7 @@ let lastSleepClear = 0;
 let polling = false;
 let sessionRetryCnt = SESSION_RETRYS;
 // Navigation List related variables
-let navLogging = false; // set to true to enable detailed logging for navigation list handling (can be very verbose)
+let navLogging = true; // set to true to enable detailed logging for navigation list handling (can be very verbose)
 let currentNavNumItems = 0;
 let currentNavNumItemsMax = 0;
 let currentNavIndex = 0;
@@ -1726,7 +1726,38 @@ class FrontierSilicon extends utils.Adapter {
 
             if (currentNavNumItems >= 0) {
                 // finite navlist (numItems is known and not -1)
-                targetChunkIndex = Math.min(startChunkIndex + 1, Math.ceil(currentNavNumItems / currentNavListChunk));
+                if (currentNavSubtype == 1 /*Station*/) {
+                    if (currentNavName.localeCompare(name) < 0) {
+                        if (navLogging) {
+                            this.log.debug(
+                                `loadChunkForNavName: currentNavName "${currentNavName}" is before target name "${name}" -> need to navigate up`,
+                            );
+                        }
+                        // current name is before target name -> navigate up
+                        targetChunkIndex = Math.min(
+                            startChunkIndex + 1,
+                            Math.ceil(currentNavNumItems / currentNavListChunk),
+                        );
+                    } else if (currentNavName.localeCompare(name) > 0) {
+                        if (navLogging) {
+                            this.log.debug(
+                                `loadChunkForNavName: currentNavName "${currentNavName}" is after target name "${name}" -> need to navigate down`,
+                            );
+
+                            // current name is after target name -> navigate down
+                            targetChunkIndex = Math.max(0, startChunkIndex - 1);
+                        }
+                    } else {
+                        // current name is the target name
+                        targetChunkIndex = startChunkIndex;
+                    }
+                } else if (currentNavSubtype == 3 /*Track*/) {
+                    // for other subtypes than station, we cannot rely on alphabetical order, so just load chunks until we found the name or cycled through all chunks}
+                    targetChunkIndex = Math.min(
+                        startChunkIndex + 1,
+                        Math.ceil(currentNavNumItems / currentNavListChunk),
+                    ); // start with searching UP, as usually users search for tracks that are after the current track in the list (e.g. next tracks in an album or playlist)
+                }
             } else {
                 targetChunkIndex = -1; // targetChunkIndex is not used for infinite lists, as we have to rely on chunk-tracking and cannot calculate the chunkIndex based on navKey
             }
@@ -1755,10 +1786,23 @@ class FrontierSilicon extends utils.Adapter {
                 if (!nameFound) {
                     if (navLogging) {
                         this.log.debug(
-                            `loadChunkForNavName: navName ${name} not found in currently loaded chunk ${nextChunkIndex}. Load further chunks until last chunk reached. (currentNavChunkIndex: ${nextChunkIndex}, startChunkIndex: ${startChunkIndex}) currentNavChunks: ${JSON.stringify(currentNavChunks)}`,
+                            `loadChunkForNavName: navName ${name} not found in currently loaded chunk ${nextChunkIndex}. Load further chunks until last chunk reached. (nextChunkIndex: ${nextChunkIndex}, startChunkIndex: ${startChunkIndex}) currentNavChunks: ${JSON.stringify(currentNavChunks)}`,
                         );
                     }
-                    if (targetChunkIndex > startChunkIndex || (currentNavNumItems == -1 && targetChunkIndex == -1)) {
+                    if (currentNavSubtype == 3 /*Track*/ && nextChunkIndex != startChunkIndex) {
+                        if (nextChunkIndex == startChunkIndex + 1 || nextChunkIndex == 0) {
+                            // if we have loaded one chunk up but did not find the name, we should try to load one chunk down before giving up
+                            await this.navigateChunkDown(); // undo previous chunkUP
+                            targetChunkIndex = startChunkIndex - 1;
+                        }
+                    }
+                    if (targetChunkIndex >= startChunkIndex || (currentNavNumItems == -1 && targetChunkIndex == -1)) {
+                        if (navLogging) {
+                            this.log.debug(
+                                `loadChunkForNavName: Navigating UP to next chunk: targetChunkIndex: ${targetChunkIndex} startchunkIndex: ${startChunkIndex} 
+                                currentNavChunkIndex: ${currentNavChunkIndex} currentChunkIndex: ${currentChunkIndex} currentNavName "${currentNavName}" is before target name "${name}"}`,
+                            );
+                        }
                         const chunkUp = await this.navigateChunkUp();
                         if (!chunkUp.success) {
                             if (navLogging) {
@@ -1777,6 +1821,12 @@ class FrontierSilicon extends utils.Adapter {
                             nextChunkIndex = chunkUp.result.chunk; // chunkIndex of the newly loaded chunk after navigateChunkUp
                         }
                     } else if (targetChunkIndex < startChunkIndex && targetChunkIndex != -1) {
+                        if (navLogging) {
+                            this.log.debug(
+                                `loadChunkForNavName: Navigating DOWN to next chunk: targetChunkIndex: ${targetChunkIndex} startchunkIndex: ${startChunkIndex}
+                                 currentNavChunkIndex: ${currentNavChunkIndex} currentChunkIndex: ${currentChunkIndex} currentNavName "${currentNavName}" is after target name "${name}"}`,
+                            );
+                        }
                         const chunkDown = await this.navigateChunkDown();
                         if (!chunkDown.success) {
                             if (navLogging) {
@@ -2277,6 +2327,8 @@ class FrontierSilicon extends utils.Adapter {
             if (obj && obj.native) {
                 obj.native.currentNavNumItems.value = currentNavNumItems;
                 obj.native.currentNavNumItemsMax.value = currentNavNumItemsMax;
+                obj.native.currentChunkIndex.value =
+                    currentNavNumItems == -1 ? currentNavChunkIndex : currentChunkIndex;
                 obj.native.currentNavKey.value = currentNavKey;
                 obj.native.currentNavName.value = currentNavName;
                 obj.native.currentNavIndex.value = currentNavIndex;
@@ -2329,8 +2381,8 @@ class FrontierSilicon extends utils.Adapter {
                 await this.sleep(2000); // wait for mode change to be registered
                 await this.enableNavIfNeccessary();
                 await this.callAPI('netRemote.sys.audio.mute', '0');
-                await this.updateNavList(); // reload nav list for current mode after unmute, as some devices (e.g. Squeezebox) clear the nav list on mute
-                await this.updateNavStates(); // update nav states for current mode after unmute
+                //await this.updateNavList(-1); // reload nav list for current mode after unmute, as some devices (e.g. Squeezebox) clear the nav list on mute
+                //await this.updateNavStates(); // update nav states for current mode after unmute
             }
         }
     }
@@ -2697,6 +2749,9 @@ class FrontierSilicon extends utils.Adapter {
                         value: 'number',
                     },
                     currentNavNumItemsMax: {
+                        value: 'number',
+                    },
+                    currentChunkIndex: {
                         value: 'number',
                     },
                     currentNavIndex: {
@@ -3751,12 +3806,12 @@ class FrontierSilicon extends utils.Adapter {
                     await this.updateNavStates();
                 } else {
                     this.log.debug(
-                        `set currentNavKey: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                        `updateNavigation: Invalid navigation state. nextKey=${nextKey}, tmpnr=${tmpnr}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
                     );
                     throw new Error('Invalid navigation state or no items available');
                 }
                 this.log.debug(
-                    `set currentNavKey successfull : currentNavKey=${currentNavKey}, currentNavIndex=${currentNavIndex}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
+                    `updateNavigation: set current NavStates successfully: currentNavKey=${currentNavKey}, currentNavIndex=${currentNavIndex}, currentNavNumItems=${currentNavNumItems} currentNavList.length=${currentNavList.length}`,
                 );
             } else {
                 throw new Error(`navKey ${nextKey} not found or invalid`);

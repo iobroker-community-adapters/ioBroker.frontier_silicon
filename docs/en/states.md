@@ -220,6 +220,3 @@ States can be read-only (`ro`) or read-write (`rw`) *ok, write-only for buttons 
           Sets that preset to the currently playing radio station or track
           If you try setting a preset of a mode X while a radio station of a different mode is playing,  
           you will get a warning.
-
-
-Please be aware that you can sometimes choose between "pushing a button" or "setting a value". Use what is more convenient for you.
