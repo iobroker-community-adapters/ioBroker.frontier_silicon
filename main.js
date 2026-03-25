@@ -1789,10 +1789,12 @@ class FrontierSilicon extends utils.Adapter {
                             `loadChunkForNavName: navName ${name} not found in currently loaded chunk ${nextChunkIndex}. Load further chunks until last chunk reached. (nextChunkIndex: ${nextChunkIndex}, startChunkIndex: ${startChunkIndex}) currentNavChunks: ${JSON.stringify(currentNavChunks)}`,
                         );
                     }
-                    if (nextChunkIndex == startChunkIndex + 1 || nextChunkIndex == 0) {
-                        // if we have loaded one chunk up but did not find the name, we should try to load one chunk down before giving up
-                        await this.navigateChunkDown(); // undo previous chunkUP
-                        targetChunkIndex = startChunkIndex - 1;
+                    if (currentNavSubtype == 3 /*Track*/ && nextChunkIndex != startChunkIndex) {
+                        if (nextChunkIndex == startChunkIndex + 1 || nextChunkIndex == 0) {
+                            // if we have loaded one chunk up but did not find the name, we should try to load one chunk down before giving up
+                            await this.navigateChunkDown(); // undo previous chunkUP
+                            targetChunkIndex = startChunkIndex - 1;
+                        }
                     }
                     if (targetChunkIndex >= startChunkIndex || (currentNavNumItems == -1 && targetChunkIndex == -1)) {
                         if (navLogging) {
