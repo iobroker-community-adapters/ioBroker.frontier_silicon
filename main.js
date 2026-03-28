@@ -12,7 +12,7 @@ const axios = require('axios').default;
 const xml2js = require('xml2js');
 
 // Load your modules here, e.g.:
-// const fs = require("fs");
+// const fs = require("node:fs");
 const SESSION_RETRYS = 3; // Total number of session re-establish attempts before adapter is sent to sleep = SESSION_RETRYS + 1
 const IP_FORMAT =
     /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
