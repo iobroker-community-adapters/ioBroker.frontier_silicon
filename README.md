@@ -124,6 +124,8 @@ Documentation of the states and objects as well as general FSAPI documentation c
 
 - (pdbjjens) Change: Increase minor version number
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## Legal Notices
 
 Frontier, Frontier Silicon, SmartRadio, UNDOK and associated logos are trademarks or registered trademarks of Frontier Smart Technologies Limited  [https://www.frontiersmart.com](https://www.frontiersmart.com)
