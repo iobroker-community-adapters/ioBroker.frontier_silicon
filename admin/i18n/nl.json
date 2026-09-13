@@ -1,0 +1,14 @@
+{
+    "Check this box only if your media player starts DAB without sound": "Vink dit vakje alleen aan als uw mediaspeler DAB start zonder geluid",
+    "IP address": "IP adres",
+    "IPV4 address of your media player e.g. 192.168.123.123": "IPV4-adres van uw mediaspeler b.v. 192.168.123.123",
+    "Network Settings": "Netwerkinstellingen",
+    "No sound": "Geen geluid",
+    "Options": "Opties",
+    "PIN code": "Pincode",
+    "PIN of your media player, default is 1234": "Pincode van uw mediaspeler, standaard is 1234",
+    "Polling interval": "Polling-interval",
+    "Session refresh interval": "Sessie vernieuwingsinterval",
+    "Status polling interval in seconds": "Status polling-interval in seconden",
+    "Validity period of a session in minutes": "Geldigheidsduur van een sessie in minuten"
+}
