@@ -3840,7 +3840,7 @@ class FrontierSilicon extends utils.Adapter {
             }
 
             // Wenn ein passender Preset-Name gefunden wurde
-            if (name === preset.val) {
+            if (name.startsWith(preset.val)) {
                 this.log.debug(`UpdatePreset: Found matching preset "${name}" at index ${i}.`);
                 await this.setState('modes.selectPreset', { val: i, ack: true });
                 presetFound = true;
