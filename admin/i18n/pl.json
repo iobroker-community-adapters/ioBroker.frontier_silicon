@@ -1,14 +1,14 @@
 {
-    "Options": "Opcje",
+    "Check this box only if your media player starts DAB without sound": "Zaznacz to pole tylko wtedy, gdy odtwarzacz multimedialny uruchamia DAB bez dźwięku",
     "IP address": "adres IP",
     "IPV4 address of your media player e.g. 192.168.123.123": "Adres IPV4 Twojego odtwarzacza multimedialnego, np. 192.168.123.123",
+    "Network Settings": "Ustawienia sieciowe",
+    "No sound": "Brak dźwięku",
+    "Options": "Opcje",
     "PIN code": "Kod PIN",
     "PIN of your media player, default is 1234": "PIN odtwarzacza multimedialnego, domyślnie 1234",
-    "No sound": "Brak dźwięku",
-    "Check this box only if your media player starts DAB without sound": "Zaznacz to pole tylko wtedy, gdy odtwarzacz multimedialny uruchamia DAB bez dźwięku",
-    "Session refresh interval": "Interwał odświeżania sesji",
-    "Validity period of a session in minutes": "Okres ważności sesji w minutach",
     "Polling interval": "Interwał odpytywania",
+    "Session refresh interval": "Interwał odświeżania sesji",
     "Status polling interval in seconds": "Interwał odpytywania stanu w sekundach",
-    "Network Settings": "Ustawienia sieciowe"
+    "Validity period of a session in minutes": "Okres ważności sesji w minutach"
 }

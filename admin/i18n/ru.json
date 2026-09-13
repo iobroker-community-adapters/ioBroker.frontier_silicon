@@ -1,0 +1,14 @@
+{
+    "Check this box only if your media player starts DAB without sound": "Установите этот флажок, только если ваш медиаплеер запускает DAB без звука.",
+    "IP address": "айпи адрес",
+    "IPV4 address of your media player e.g. 192.168.123.123": "IPV4-адрес вашего медиаплеера, например. 192.168.123.123",
+    "Network Settings": "Настройки сети",
+    "No sound": "Без звука",
+    "Options": "Параметры",
+    "PIN code": "Пин-код",
+    "PIN of your media player, default is 1234": "PIN-код вашего медиаплеера, по умолчанию 1234",
+    "Polling interval": "Интервал опроса",
+    "Session refresh interval": "Интервал обновления сеанса",
+    "Status polling interval in seconds": "Интервал опроса состояния в секундах",
+    "Validity period of a session in minutes": "Срок действия сеанса в минутах"
+}
