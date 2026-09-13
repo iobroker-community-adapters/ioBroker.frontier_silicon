@@ -172,7 +172,7 @@ class FrontierSilicon extends utils.Adapter {
     }
 
     async cleanUp() {
-        clearTimeout(timeOutMessage);
+        this.clearTimeout(timeOutMessage);
         sleeps.forEach(value => {
             clearTimeout(value);
         });
@@ -206,8 +206,8 @@ class FrontierSilicon extends utils.Adapter {
      */
     async onStateChange(id, state) {
         if (notifyTimestamp <= Date.now() - (this.config.PollIntervall * 1000 + 40000)) {
-            clearTimeout(timeOutMessage);
-            timeOutMessage = setTimeout(() => this.onFSAPIMessage(), this.config.PollIntervall * 1000); // Poll states every configured seconds
+            this.clearTimeout(timeOutMessage);
+            timeOutMessage = this.setTimeout(() => this.onFSAPIMessage(), this.config.PollIntervall * 1000); // Poll states every configured seconds
         }
         if (state) {
             if (!id || !state || state.ack) {
@@ -3444,11 +3444,11 @@ class FrontierSilicon extends utils.Adapter {
                             // clean up timers or intervals
                             polling = true; // disable onFSAPI processing
                             this.cleanUp(); // stop all sleeps
-                            clearTimeout(timeOutMessage); // stop polling
+                            this.clearTimeout(timeOutMessage); // stop polling
                             await this.sleep(this.config.RecreateSessionInterval * 60 * 1000);
                             try {
                                 await this.createSession();
-                                timeOutMessage = setTimeout(
+                                timeOutMessage = this.setTimeout(
                                     () => this.onFSAPIMessage(),
                                     this.config.PollIntervall * 1000,
                                 );
@@ -3748,8 +3748,8 @@ class FrontierSilicon extends utils.Adapter {
                     await adapter.setState('debug.lastNotifyError', { val: JSON.stringify(e), ack: true });
                 }
             } finally {
-                clearTimeout(timeOutMessage);
-                timeOutMessage = setTimeout(() => this.onFSAPIMessage(), this.config.PollIntervall * 1000);
+                this.clearTimeout(timeOutMessage);
+                timeOutMessage = this.setTimeout(() => this.onFSAPIMessage(), this.config.PollIntervall * 1000);
                 polling = false;
             }
         }
