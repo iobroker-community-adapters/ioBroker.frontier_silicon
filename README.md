@@ -21,7 +21,7 @@ NOTE: This adapter has been transferred to iobroker-community-adapters for maint
 
 RELEASE NOTES:
 
-Version 0.7.x includes a Breaking Change and a new navigation function:
+Version 0.6.x includes a Breaking Change and a new navigation function:
 
 - node>=22, js-controller>=7.0.7 and admin>=7.7.22 required  
 Upgrade your ioBroker to at least this software level, if you want to use this adapter
