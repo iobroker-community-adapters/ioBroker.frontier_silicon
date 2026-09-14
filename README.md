@@ -21,15 +21,15 @@ NOTE: This adapter has been transferred to iobroker-community-adapters for maint
 
 RELEASE NOTES:
 
-Version 0.6.x includes a Breaking Change and a new navigation function:
+Version 0.7.x includes a Breaking Change and a new navigation function:
 
-- node>=20, js-controller>=7.0.7 and admin>=7.7.22 required  
+- node>=22, js-controller>=7.0.7 and admin>=7.7.22 required  
 Upgrade your ioBroker to at least this software level, if you want to use this adapter
 
 - New Navigation functions  
  New button objects (up/down/select/back/home/search) allow to explore and navigate the file structure of the FSAPI device and to select playable items.  
  New state objects identify the current location within the file structure and list the items like directories or files and their properties at that location.  
- Together, buttons and item lists allow integration of the FSAPI adapter in media player widgets of ioBroker visualizations like VIS2 or iqontrol.
+ Together, buttons and item lists allow integration of the FSAPI adapter in media player widgets of ioBroker visualizations like VIS2 or iQontrol.
 
 - New preset functions  
  New Button objects allow setting the currently playing radio station as a new preset. Also there are buttons to navigate the presets of the current mode up or down. These buttons can also be used to integrate preset navigation into a visualization media player widget.
@@ -81,7 +81,7 @@ Documentation of the states and objects as well as general FSAPI documentation c
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### **WORK IN PROGRESS** - 2026H2 maintenance release
 
 - (copilot) Adapter requires node.js >= 22 now
 - (pdbjjens) **New**: navigation functions (up/down/select/back/home/search) for all modes (#342)
