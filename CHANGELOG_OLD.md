@@ -1,4 +1,9 @@
 # Older changes
+## 0.2.0 (2024-01-28)
+
+- (pdbjjens) Change: Increase minor version number
+
+
 ## 0.1.2 (2024-01-26) - 2024 maintenance release
 
 - (pdbjjens) Change: node>=16, js-contoller>=4 and admin>=5 required

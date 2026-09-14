@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "frontier_silicon",
-    "version": "0.5.1",
+    "version": "0.6.0",
     "news": {
+      "0.6.0": {
+        "en": "Adapter requires node.js >= 22 now\n**New**: navigation functions (up/down/select/back/home/search) for all modes (#342)\n**New**: functions to set presets and to navigate presets up/down\n**Fixed**: i18n directory migrated to short format\n**Fixed**: dependency updates and minor bugfixes",
+        "de": "Adapter benötigt jetzt node.js >= 22\n**Neu**: Navigationsfunktionen (hoch/ab/auswählen/zurück/home/) (#342)\n**Neu**: Funktionen zum Setzen und Auf-/Ab-Navigieren\n**Fixiert**: Verzeichnis i18n ins Kurzformat migriert\n**Behoben**: Updates und kleinere Bugfixes",
+        "ru": "Теперь для адаптера требуется файл node.js >= 22\n**Новое**: функции навигации (вверх/вниз/выбор/назад/домашний/поиск) для всех режимов (#342)\n**Новое**: функции для установки пресетов и навигации по пресетам вверх/вниз\n**Исправлено**: каталог i18n перенесен в короткий формат\n**Исправлено**: обновления зависимостей и незначительные исправления",
+        "pt": "O adaptador exige node.js >= 2\n**Novo**: funções de navegação (up/down/back/home/search) em todos os modos (#342)\n**Novo**: funções para subir e descer as predefinições\n**Fixo**: pasta i18n migrada para formato curto\n**Corrigido**: dependências e pequenos bugs",
+        "nl": "Voor de adapter is nu node.js >= 22 nodig\n**Nieuw**: navigatiefuncties (omhoog/omlaag/selecteren/terug/home/search) voor alle modi (#342)\n**Nieuw**: functies om voorinstellingen in te stellen en om voorinstellingen omhoog/omlaag te navigeren\n**Opgelost**: de i18n-directory is gemigreerd naar een kort formaat\n**Opgelost**: afhankelijkheidsupdates en kleine bugfixes",
+        "fr": "Adapter nécessite node.js >= 22\n**Nouveau** : fonctions de navigation (haut/bas/select/back/home/search) pour tous les modes (#342)\n**Nouveau** : fonctions de réglage des préréglages et de navigation\n**Corrigé** : le répertoire i18n a été migré au format court\n**Corrigé** : mises à jour de dépendances et bugs mineurs",
+        "it": "Adapter richiede node.js =2 ora\n**Nuovo**: funzioni di navigazione (su/giù/back/home/search) per tutte le modalità (#342)\n**Nuovo**: funzioni per impostare i preset e spostarli su/giù\n**Fisso**: cartella i18n migrata in formato breve\n**Fisso**: dipendenze e bugfix minori",
+        "es": "El adaptador necesita node.js >= 22 ahora\n**Nuevo**: funciones de navegación (arriba/abajo/seleccionar/atrasar/buscar) para todos los modos (#342)\n**Nuevo**: funciones para configurar presets y subir/bajar\n**Fijo**: el directorio i18n migró a formato corto\n**Fijo**: actualizaciones de dependencias y errores menores",
+        "pl": "Adapter wymaga teraz node.js >= 22\n**Nowy**: funkcje nawigacji (góra/dół/wybierz/wstec/dom/wyszukiwanie) dla wszystkich trybów (#342)\n**Nowy**: funkcje do ustawiania ustawień wstępnych i nawigacji w górę/w dół\n**Naprawione**: katalog i18n został przeniesiony do krótkiego formatu\n**Naprawione**: aktualizacje zależności i drobne poprawki błędów",
+        "uk": "Адаптер вимагає node.js >= 22 зараз\n**Новий**: функції навігації (вгору/вниз/вибрати/назад/дому/пошук) для всіх режимів (#342)\n**Новий**: функції для встановлення пресетів та навігації пресетів вгору/вниз\n** Виправлено**: каталог i18n перенесений у короткий формат\n** Виправлено**: оновлення залежностей та незначні виправлення помилок",
+        "zh-cn": "适配器现在需要 node.js >= 22\n**新增**：所有模式的导航功能（向上/向下/选择/返回/主页/搜索）(#342)\n**新增**：设置预设和向上/向下浏览预设的功能\n**已修复**：i18n 目录迁移到短格式\n**已修复**：依赖项更新和小错误修复"
+      },
       "0.5.1": {
         "en": "Adapter requires admin >= 7.7.22 now\n**Fixed**: update release-script (#348)\nDependencies have been updated\nFix: Add GitHub as npm Trusted Publisher\nChange: Update dependencies",
         "de": "Adapter benötigt admin >= 7.7.22 jetzt\n**Fixed**: Update-Release-script (#348)\nAbhängigkeiten wurden aktualisiert\nFix: GitHub als npm Trusted Publisher hinzufügen\nÄnderung: Abhängigkeiten aktualisieren",
@@ -80,19 +93,6 @@
         "pl": "Zmiana: Zwiększ numer wersji mniejszej",
         "uk": "Зміна: Підвищений номер меншої версії",
         "zh-cn": "更改: 增加小版本号"
-      },
-      "0.1.2": {
-        "en": "Change: node>=16, js-contoller>=4 and admin>=5 required\nNew: Optionally display PIN code and limit to 4 digits in config GUI\nUpdated dependencies",
-        "de": "Änderung: node>=16, js-contoller>=4 und admin>=5 erforderlich\nNeu: Optional PIN-Code anzeigen und auf 4 Stellen in config GUI begrenzen\nAktualisierte Abhängigkeiten",
-        "ru": "Изменение: node>=16, js-contoller>=4 и admin>=5 требуется\nНовый: Опционально отображать PIN-код и ограничиться 4 цифрами в настройке GUI\nОбновленные зависимости",
-        "pt": "Alteração: node>=16, js-contoller>=4 e admin>=5 requerido\nNovo: Opcionalmente exibir código PIN e limite para 4 dígitos em config GUI\nDependências atualizadas",
-        "nl": "Verandering: node>=16, js-contoller>=4 en admin>=5 vereist\nNieuw: Optioneel PIN-code tonen en beperken tot 4 cijfers in config GUI\nBijgewerkte afhankelijkheden",
-        "fr": "Changement : noeud>=16, js-contoller>=4 et admin>=5 requis\nNouveau: Optionnellement afficher le code PIN et limiter à 4 chiffres dans la configuration GUI\nDépendances actualisées",
-        "it": "Modifica: nodo>=16, js-contoller>=4 e admin>=5 richiesto\nNovità: Consente di visualizzare il codice PIN e limitare a 4 cifre in configurazione GUI\nDipendenze aggiornate",
-        "es": "Cambio: node confianza=16, js-contoller confianza=4 y administración=5 requerido\nNuevo: Opcionalmente mostrar código PIN y limitar a 4 dígitos en config GUI\nDependencias actualizadas",
-        "pl": "Zmiana: węzeł > = 16, js- contoller > = 4 i admin > = 5 wymagane\nNowy: Opcjonalnie wyświetl kod PIN i ogranicz do 4 cyfr w GUI konfiguracyjnym\nAktualizacja zależności",
-        "uk": "Зміна: вершина>=16, js-contoller>=4 і admin>=5 потрібно\nНовий: Необов'язково відображати PIN-код і обмежити до 4 цифр в config GUI\nОновлені залежності",
-        "zh-cn": "更改:节点>=16、js-contoller>=4和admin>=5\n新建: 可选显示 PIN 代码, 并在配置图形界面中限制为 4 位数\n更新的依赖关系"
       }
     },
     "titleLang": {

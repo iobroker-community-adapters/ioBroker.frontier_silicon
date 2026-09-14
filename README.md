@@ -81,7 +81,7 @@ Documentation of the states and objects as well as general FSAPI documentation c
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS** - 2026H2 maintenance release
+### 0.6.0 (2026-09-14) - 2026H2 maintenance release
 
 - (copilot) Adapter requires node.js >= 22 now
 - (pdbjjens) **New**: navigation functions (up/down/select/back/home/search) for all modes (#342)
@@ -121,10 +121,6 @@ Documentation of the states and objects as well as general FSAPI documentation c
 - (pdbjjens) Change: Cyclic connection retry instead of disabling the adapter (#191)
 - (pdbjjens) New: Updated dependencies
 - (pdbjjens) Fix: Replace deprecated method "deleteChannel" by "delObject" (#224)
-
-### 0.2.0 (2024-01-28)
-
-- (pdbjjens) Change: Increase minor version number
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
