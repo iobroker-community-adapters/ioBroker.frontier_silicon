@@ -77,6 +77,9 @@ Documentation of the states and objects as well as general FSAPI documentation c
 <https://github.com/iobroker-community-adapters/ioBroker.frontier_silicon/blob/master/docs/en>
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+- (copilot) Adapter requires node.js >= 22.19.0 now
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
